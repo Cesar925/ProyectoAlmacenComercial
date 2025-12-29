@@ -1,0 +1,15 @@
+Options -Indexes
+Options +FollowSymLinks
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^backend/?(.*)$ backend/index.php [L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^frontend/?(.*)$ frontend/$1 [L,QSA]
+
+DirectoryIndex frontend/index.html
+
+
