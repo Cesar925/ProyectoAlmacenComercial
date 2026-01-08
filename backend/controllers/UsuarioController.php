@@ -23,6 +23,7 @@ class UsuarioController
             // Crear variables de sesión
             $_SESSION['usuario'] = $resultado['data']['codigo'];
             $_SESSION['nombre'] = $resultado['data']['nombre'];
+            $_SESSION['rol'] = $resultado['data']['rol'] ?? 'USER';
 
             echo json_encode([
                 'success' => true,

@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (userNameElem) userNameElem.textContent = usuario.nombre || 'Usuario';
             if (rolUserElem) rolUserElem.textContent = usuario.rol || 'Usuario';
+            
+            // Guardar en sessionStorage para acceso rápido en otras partes de la app
+            sessionStorage.setItem('userCode', usuario.codigo);
+            sessionStorage.setItem('userName', usuario.nombre);
+            sessionStorage.setItem('userRole', usuario.rol || 'USER');
         }
     } catch (error) {
         console.error('Error validando sesión:', error);

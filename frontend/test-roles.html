@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sistema de Roles - ProyectoAlmacenComercial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/fontawesome/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .badge-role {
+            font-size: 14px;
+            padding: 8px 15px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .test-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .test-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .test-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-card">
+            <h1 class="mb-4">
+                <i class="fas fa-flask"></i> Test Sistema de Roles y Permisos
+            </h1>
+            
+            <!-- Información de Usuario Actual -->
+            <div class="alert alert-info">
+                <h5><i class="fas fa-user"></i> Usuario Actual</h5>
+                <p class="mb-1"><strong>Código:</strong> <span id="currentCode">N/A</span></p>
+                <p class="mb-1"><strong>Nombre:</strong> <span id="currentName">N/A</span></p>
+                <p class="mb-0">
+                    <strong>Rol:</strong> 
+                    <span id="currentRole" class="badge badge-role bg-primary">N/A</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Test de Autenticación -->
+        <div class="test-card">
+            <h3><i class="fas fa-sign-in-alt"></i> Test 1: Autenticación</h3>
+            <div class="mb-3">
+                <label class="form-label">Usuario</label>
+                <input type="text" class="form-control" id="testUsuario" placeholder="Código de usuario">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="testPassword" placeholder="Contraseña">
+            </div>
+            <button class="btn btn-primary" onclick="testLogin()">
+                <i class="fas fa-play"></i> Probar Login
+            </button>
+            <div id="loginResult" class="mt-3"></div>
+        </div>
+
+        <!-- Test de Validación de Sesión -->
+        <div class="test-card">
+            <h3><i class="fas fa-check-circle"></i> Test 2: Validación de Sesión</h3>
+            <button class="btn btn-success" onclick="testValidarSesion()">
+                <i class="fas fa-play"></i> Validar Sesión Actual
+            </button>
+            <div id="validarResult" class="mt-3"></div>
+        </div>
+
+        <!-- Test de Permisos por Rol -->
+        <div class="test-card">
+            <h3><i class="fas fa-shield-alt"></i> Test 3: Verificación de Permisos</h3>
+            <button class="btn btn-info" onclick="testPermisos()">
+                <i class="fas fa-play"></i> Verificar Permisos
+            </button>
+            <div id="permisosResult" class="mt-3"></div>
+        </div>
+
+        <!-- Test de UI según Rol -->
+        <div class="test-card">
+            <h3><i class="fas fa-eye"></i> Test 4: Elementos UI según Rol</h3>
+            
+            <!-- Solo ADMIN -->
+            <button class="btn btn-danger mb-2" data-role-required="ADMIN">
+                <i class="fas fa-trash"></i> Botón solo para ADMIN
+            </button>
+            
+            <!-- ADMIN y SUPERVISOR -->
+            <button class="btn btn-warning mb-2" data-role-required="ADMIN,SUPERVISOR">
+                <i class="fas fa-edit"></i> Botón para ADMIN y SUPERVISOR
+            </button>
+            
+            <!-- Todos menos VIEWER -->
+            <button class="btn btn-success mb-2" data-role-hide="VIEWER">
+                <i class="fas fa-plus"></i> Oculto para VIEWER
+            </button>
+            
+            <!-- Deshabilitado para VIEWER -->
+            <button class="btn btn-secondary mb-2" data-role-disable="VIEWER">
+                <i class="fas fa-save"></i> Deshabilitado para VIEWER
+            </button>
+
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle"></i> Los botones se muestran/ocultan automáticamente según tu rol actual
+            </div>
+        </div>
+
+        <!-- Test de Cambio de Rol -->
+        <div class="test-card">
+            <h3><i class="fas fa-sync-alt"></i> Test 5: Simular Cambio de Rol en BD</h3>
+            <p>Este test simula el comportamiento cuando un admin cambia tu rol en la base de datos.</p>
+            
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> 
+                <strong>Comportamiento esperado:</strong><br>
+                1. El cambio en BD no se refleja inmediatamente en la sesión actual<br>
+                2. Debes hacer LOGOUT y LOGIN para ver el nuevo rol<br>
+                3. Esto es por diseño para optimizar rendimiento y seguridad
+            </div>
+
+            <button class="btn btn-warning" onclick="testCambioRol()">
+                <i class="fas fa-play"></i> Simular Cambio de Rol
+            </button>
+            <div id="cambioRolResult" class="mt-3"></div>
+        </div>
+
+        <!-- Test de Logout -->
+        <div class="test-card">
+            <h3><i class="fas fa-sign-out-alt"></i> Test 6: Logout</h3>
+            <button class="btn btn-danger" onclick="testLogout()">
+                <i class="fas fa-play"></i> Cerrar Sesión
+            </button>
+            <div id="logoutResult" class="mt-3"></div>
+        </div>
+
+        <!-- Documentación Rápida -->
+        <div class="test-card">
+            <h3><i class="fas fa-book"></i> Documentación Rápida</h3>
+            <div class="accordion" id="docsAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#usage">
+                            Uso de RoleManager en JavaScript
+                        </button>
+                    </h2>
+                    <div id="usage" class="accordion-collapse collapse" data-bs-parent="#docsAccordion">
+                        <div class="accordion-body">
+                            <pre><code>// Verificar rol actual
+const rol = RoleManager.getCurrentRole();
+
+// Verificar permisos
+if (RoleManager.isAdmin()) {
+    console.log('Usuario es admin');
+}
+
+if (RoleManager.canEdit()) {
+    // Mostrar botón de editar
+}
+
+if (RoleManager.canDelete()) {
+    // Mostrar botón de eliminar
+}
+
+// Ocultar/mostrar elementos
+RoleManager.toggleElementByRole('btnDelete', ['ADMIN']);
+RoleManager.toggleElementByRole('btnEdit', ['ADMIN', 'SUPERVISOR']);</code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#html">
+                            Uso en HTML
+                        </button>
+                    </h2>
+                    <div id="html" class="accordion-collapse collapse" data-bs-parent="#docsAccordion">
+                        <div class="accordion-body">
+                            <pre><code>&lt;!-- Solo visible para ADMIN --&gt;
+&lt;button data-role-required="ADMIN"&gt;Eliminar&lt;/button&gt;
+
+&lt;!-- Visible para ADMIN y SUPERVISOR --&gt;
+&lt;button data-role-required="ADMIN,SUPERVISOR"&gt;Editar&lt;/button&gt;
+
+&lt;!-- Oculto para VIEWER --&gt;
+&lt;div data-role-hide="VIEWER"&gt;Contenido&lt;/div&gt;
+
+&lt;!-- Deshabilitado para VIEWER --&gt;
+&lt;button data-role-disable="VIEWER"&gt;Acción&lt;/button&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config/config.js"></script>
+    <script src="js/services/auth.service.js"></script>
+    <script src="js/utils/role-manager.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Cargar información del usuario actual
+        async function loadCurrentUser() {
+            try {
+                const sesion = await AuthService.validarSesion();
+                if (sesion.success && sesion.data) {
+                    document.getElementById('currentCode').textContent = sesion.data.codigo || 'N/A';
+                    document.getElementById('currentName').textContent = sesion.data.nombre || 'N/A';
+                    document.getElementById('currentRole').textContent = sesion.data.rol || 'N/A';
+                    
+                    // Actualizar color del badge según rol
+                    const badge = document.getElementById('currentRole');
+                    badge.className = 'badge badge-role';
+                    switch(sesion.data.rol) {
+                        case 'ADMIN':
+                            badge.classList.add('bg-danger');
+                            break;
+                        case 'SUPERVISOR':
+                            badge.classList.add('bg-warning');
+                            break;
+                        case 'USER':
+                            badge.classList.add('bg-primary');
+                            break;
+                        case 'VIEWER':
+                            badge.classList.add('bg-secondary');
+                            break;
+                        default:
+                            badge.classList.add('bg-info');
+                    }
+                } else {
+                    showResult('validarResult', 'No hay sesión activa. Por favor, haz login primero.', 'error');
+                }
+            } catch (error) {
+                console.error('Error cargando usuario:', error);
+            }
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            let className = 'test-info';
+            let icon = 'fa-info-circle';
+            
+            if (type === 'success') {
+                className = 'test-success';
+                icon = 'fa-check-circle';
+            } else if (type === 'error') {
+                className = 'test-error';
+                icon = 'fa-times-circle';
+            }
+            
+            element.innerHTML = `
+                <div class="test-result ${className}">
+                    <i class="fas ${icon}"></i> ${message}
+                </div>
+            `;
+        }
+
+        async function testLogin() {
+            const usuario = document.getElementById('testUsuario').value;
+            const password = document.getElementById('testPassword').value;
+            
+            if (!usuario || !password) {
+                showResult('loginResult', 'Por favor ingresa usuario y contraseña', 'error');
+                return;
+            }
+            
+            try {
+                showResult('loginResult', 'Autenticando...', 'info');
+                const result = await AuthService.login(usuario, password, 'TEST:0,0');
+                
+                if (result.success) {
+                    showResult('loginResult', 
+                        `✅ Login exitoso!<br>
+                        Usuario: ${result.data.codigo}<br>
+                        Nombre: ${result.data.nombre}<br>
+                        Rol: ${result.data.rol || 'N/A'}`, 
+                        'success'
+                    );
+                    loadCurrentUser();
+                } else {
+                    showResult('loginResult', '❌ ' + (result.message || 'Login fallido'), 'error');
+                }
+            } catch (error) {
+                showResult('loginResult', '❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function testValidarSesion() {
+            try {
+                showResult('validarResult', 'Validando sesión...', 'info');
+                const result = await AuthService.validarSesion();
+                
+                if (result.success) {
+                    showResult('validarResult', 
+                        `✅ Sesión válida!<br>
+                        Usuario: ${result.data.codigo}<br>
+                        Nombre: ${result.data.nombre}<br>
+                        Rol: ${result.data.rol || 'N/A'}`, 
+                        'success'
+                    );
+                } else {
+                    showResult('validarResult', '❌ No hay sesión activa', 'error');
+                }
+            } catch (error) {
+                showResult('validarResult', '❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        function testPermisos() {
+            const rol = RoleManager.getCurrentRole();
+            const permisos = {
+                'Es Admin': RoleManager.isAdmin(),
+                'Es Supervisor': RoleManager.isSupervisor(),
+                'Es User': RoleManager.isUser(),
+                'Es Viewer': RoleManager.isViewer(),
+                'Puede Crear': RoleManager.canCreate(),
+                'Puede Editar': RoleManager.canEdit(),
+                'Puede Eliminar': RoleManager.canDelete()
+            };
+            
+            let html = `<strong>Rol actual: ${rol}</strong><br><br>`;
+            for (const [permiso, tiene] of Object.entries(permisos)) {
+                const icon = tiene ? '✅' : '❌';
+                html += `${icon} ${permiso}: ${tiene}<br>`;
+            }
+            
+            showResult('permisosResult', html, 'info');
+        }
+
+        function testCambioRol() {
+            showResult('cambioRolResult', 
+                `📝 <strong>Simulación de cambio de rol:</strong><br><br>
+                1️⃣ Admin cambia tu rol en BD: <code>UPDATE usuario SET rol='ADMIN' WHERE codigo='${RoleManager.getCurrentUserCode()}'</code><br><br>
+                2️⃣ Intentas validar sesión actual...<br>
+                <span style="color: orange;">⚠️ Resultado: Sigues viendo el rol anterior (${RoleManager.getCurrentRole()})</span><br><br>
+                3️⃣ Haces LOGOUT y LOGIN nuevamente<br>
+                <span style="color: green;">✅ Resultado: Ahora ves el nuevo rol (ADMIN)</span><br><br>
+                <strong>Conclusión:</strong> Los cambios de rol requieren logout/login para reflejarse.<br>
+                Esto es intencional para optimizar rendimiento y seguridad.`, 
+                'info'
+            );
+        }
+
+        async function testLogout() {
+            try {
+                showResult('logoutResult', 'Cerrando sesión...', 'info');
+                const result = await AuthService.logout();
+                
+                if (result.success) {
+                    RoleManager.clearRoleData();
+                    showResult('logoutResult', '✅ Sesión cerrada correctamente', 'success');
+                    
+                    setTimeout(() => {
+                        loadCurrentUser();
+                    }, 1000);
+                } else {
+                    showResult('logoutResult', '❌ Error al cerrar sesión', 'error');
+                }
+            } catch (error) {
+                showResult('logoutResult', '❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        // Cargar usuario al iniciar
+        loadCurrentUser();
+    </script>
+</body>
+</html>

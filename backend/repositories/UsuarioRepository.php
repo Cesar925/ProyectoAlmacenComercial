@@ -10,7 +10,7 @@ class UsuarioRepository {
     }
 
     public function login($usuario, $password) {
-        $sql = "SELECT u.codigo, u.nombre
+        $sql = "SELECT u.codigo, u.nombre, u.rol
                 FROM usuario u
                 JOIN conempre c ON c.epre = 'RS'
                 WHERE u.codigo = ?

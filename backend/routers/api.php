@@ -25,7 +25,14 @@ if ($request === 'POST' && strpos($path, '/usuario/login') !== false) {
     exit;
 } elseif ($request === 'GET' && strpos($path, '/usuario/validarSesion') !== false) {
     if (isset($_SESSION['usuario'])) {
-        echo json_encode(['success' => true, 'data' => ['codigo' => $_SESSION['usuario'], 'nombre' => $_SESSION['nombre']]]);
+        echo json_encode([
+            'success' => true, 
+            'data' => [
+                'codigo' => $_SESSION['usuario'], 
+                'nombre' => $_SESSION['nombre'],
+                'rol' => $_SESSION['rol'] ?? 'USER'
+            ]
+        ]);
     } else {
         echo json_encode(['success' => false]);
     }
