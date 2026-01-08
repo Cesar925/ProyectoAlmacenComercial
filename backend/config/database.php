@@ -1,11 +1,16 @@
 <?php
 class Database {
-    private $host = "localhost";
+    /*private $host = "localhost";
     private $db_name = "comtrol_procesos";
     private $username = "root";
     private $password = "";
-    private $conn;
+    private $conn;*/
 
+private $host = "200.48.160.2";
+    private $db_name = "grs_proyjoya";
+    private $username = "rinconada";
+    private $password = "MrCls078e5ou";
+    private $conn;
 
     public function getConnection() {
         $this->conn = null;

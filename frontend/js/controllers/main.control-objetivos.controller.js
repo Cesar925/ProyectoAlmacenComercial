@@ -1,4 +1,4 @@
-﻿class ControlObjetivosController {
+class ControlObjetivosController {
     constructor() {
         this.service = new ControlObjetivosService();
         this.config = window.ControlObjetivosConfig;
@@ -9,12 +9,13 @@
         this.granjasDisponibles = [];
         this.pilotoActual = null;
 
-        // Inicializar sub-controladores
-        this.modal = new ModalController(this);
-        this.table = new TableController(this);
-        this.task = new TaskController(this);
-        this.form = new FormController(this);
-        this.filter = new FilterController(this);
+        // Inicializar sub-controladores por módulo específico
+        this.modalObjetivos = new ModalObjetivosController(this);
+        this.modalTareas = new ModalTareasController(this);
+        this.modalTareaForm = new ModalTareaFormController(this);
+        this.tableObjetivos = new TableObjetivosController(this);
+        this.formObjetivos = new FormObjetivosController(this);
+        this.filterObjetivos = new FilterObjetivosController(this);
     }
 
     async init() {
@@ -28,15 +29,15 @@
 
     setupEventListeners() {
         const events = {
-            'btnNuevo': () => this.modal.mostrarNuevo(),
+            'btnNuevo': () => this.modalObjetivos.modal_objetivos_mostrarNuevo(),
             'btnExportar': () => this.exportarExcel(),
-            'btnLimpiarFiltros': () => this.filter.limpiar(),
-            'btnAplicarFiltros': () => this.filter.aplicar(),
-            'btnCancelar': () => this.modal.cerrarObjetivo(),
-            'btnCerrarSubprocesos': () => this.modal.cerrarSubprocesos(),
-            'btnNuevaTarea': () => this.task.mostrarModalNueva(),
-            'btnCancelarTarea': () => this.modal.cerrarTarea(),
-            'btnCerrarTarea': () => this.modal.cerrarTarea()
+            'btnLimpiarFiltros': () => this.filterObjetivos.filter_objetivos_limpiar(),
+            'btnAplicarFiltros': () => this.filterObjetivos.filter_objetivos_aplicar(),
+            'btnCancelar': () => this.modalObjetivos.modal_objetivos_cerrar(),
+            'btnCerrarSubprocesos': () => this.modalTareas.modal_tareas_cerrar(),
+            'btnNuevaTarea': () => this.modalTareaForm.modal_tarea_mostrarModalNueva(),
+            'btnCancelarTarea': () => this.modalTareaForm.modal_tarea_cerrar(),
+            'btnCerrarTarea': () => this.modalTareaForm.modal_tarea_cerrar()
         };
 
         Object.entries(events).forEach(([id, handler]) => {
@@ -45,19 +46,13 @@
 
         document.getElementById('formObjetivo')?.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.form.guardar();
+            this.formObjetivos.form_objetivos_guardar();
         });
 
         document.getElementById('formTarea')?.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.task.guardar();
+            this.modalTareaForm.modal_tarea_guardar();
         });
-
-        ['tareaFechaInicio', 'tareaFechaFin'].forEach(id => {
-            document.getElementById(id)?.addEventListener('change', () => this.task.calcularDuracion());
-        });
-
-        document.getElementById('tareaTipo')?.addEventListener('change', () => this.task.onTipoChange());
     }
 
     setupTableEventListeners() {
@@ -73,11 +68,11 @@
 
             const { action, id, piloto } = button.dataset;
             const actions = {
-                'ver-tareas': () => this.task.abrir(piloto, id),
-                'ver-tareas-obj': () => this.task.abrir(piloto, id),
-                'ver-tareas-meta': () => this.task.abrir(piloto, id),
-                'editar': () => this.form.editar(piloto),
-                'eliminar': () => this.form.eliminar(id, piloto)
+                'ver-tareas': () => this.modalTareas.modal_tareas_abrir(piloto, id),
+                'ver-tareas-obj': () => this.modalTareas.modal_tareas_abrir(piloto, id),
+                'ver-tareas-meta': () => this.modalTareas.modal_tareas_abrir(piloto, id),
+                'editar': () => this.formObjetivos.form_objetivos_editar(piloto),
+                'eliminar': () => this.formObjetivos.form_objetivos_eliminar(id, piloto)
             };
 
             actions[action]?.();
@@ -127,7 +122,7 @@
             this.mostrarCargando(true);
             const response = await this.service.getAll();
             this.datos = response.data || response || [];
-            this.table.renderizar();
+            this.tableObjetivos.table_objetivos_renderizar();
         } catch (error) {
             console.error('Error al cargar datos:', error);
             this.mostrarNotificacion(this.config.MENSAJES.ERROR.CARGAR, 'error');
@@ -196,8 +191,14 @@
         }
     }
 
-    editarTarea(idTarea) { this.task.editar(idTarea); }
-    eliminarTarea(idTarea) { this.task.eliminar(idTarea); }
+    // Métodos delegados para compatibilidad con onclick en HTML
+    modal_tarea_editar(idTarea) { 
+        this.modalTareaForm.modal_tarea_editar(idTarea); 
+    }
+    
+    modal_tarea_eliminar(idTarea) { 
+        this.modalTareaForm.modal_tarea_eliminar(idTarea); 
+    }
 
     mostrarCargando(mostrar) {
         const loading = document.getElementById('loading');
