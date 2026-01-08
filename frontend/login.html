@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Gestión</title>
+    
+          <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/output.css">
+
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="css/dashboard-styles.css">
+    
+    
+    <style>
+        .login-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+
+        .login-card {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        .company-logo {
+            background-color: #003087;
+            padding: 1rem;
+            border-radius: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container flex items-center justify-center p-4">
+        <div class="login-card w-full max-w-md p-8 rounded-2xl shadow-2xl">
+            <!-- Logo de la empresa -->
+            <div class="flex justify-center mb-8">
+                <div class="company-logo">
+                    <img src="assets/img/logo.png" alt="Granja Rinconada del Sur" class="h-32">
+                </div>
+            </div>
+
+            <!-- Título -->
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-8">Iniciar Sesion</h1>
+
+            <!-- Formulario -->
+            <form id="loginForm" class="space-y-6">
+                <!-- Usuario -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-user text-blue-600 mr-2"></i>
+                        Usuario
+                    </label>
+                    <input type="text" id="usuario" name="usuario" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Ingrese su usuario">
+                </div>
+
+                <!-- Contraseña -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-lock text-blue-600 mr-2"></i>
+                        Contraseña
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Ingrese su contraseña">
+                        <button type="button" id="togglePassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botón de ingreso -->
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Ingresar
+                </button>
+            </form>
+
+            <!-- Mensaje de error -->
+            <div id="errorMessage" class="mt-4 text-center text-red-600 hidden">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span>Usuario o contraseña incorrectos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-2"></i>
+            <p class="text-gray-700">Validando credenciales...</p>
+        </div>
+    </div>
+
+    <script src="js/config/config.js"></script>
+    <script src="js/services/auth.service.js"></script>
+    <script src="js/controllers/login.controllers.js"></script>
+</body>
+
+</html>
+

@@ -1,0 +1,1864 @@
+class ControlObjetivosController {
+    constructor() {
+        this.service = new ControlObjetivosService();
+        this.config = window.ControlObjetivosConfig;
+        this.datos = [];
+        this.registroSeleccionado = null;
+        this.objetivoActual = null;
+        this.tareasActuales = [];
+        this.granjasDisponibles = [];
+        this.grupoIdsActual = [];
+
+        this.editarRegistro = this.editarRegistro.bind(this);
+        this.eliminarRegistro = this.eliminarRegistro.bind(this);
+        this.abrirSubprocesos = this.abrirSubprocesos.bind(this);
+        this.agregarItemGranjaGalpon = this.agregarItemGranjaGalpon.bind(this);
+        this.calcularDuracion = this.calcularDuracion.bind(this);
+        this.onTipoTareaChange = this.onTipoTareaChange.bind(this);
+        this.mostrarModalNuevo = this.mostrarModalNuevo.bind(this);
+        this.exportarExcel = this.exportarExcel.bind(this);
+        this.limpiarFiltros = this.limpiarFiltros.bind(this);
+        this.aplicarFiltros = this.aplicarFiltros.bind(this);
+        this.cerrarModal = this.cerrarModal.bind(this);
+        this.cerrarModalSubprocesos = this.cerrarModalSubprocesos.bind(this);
+        this.cerrarModalTarea = this.cerrarModalTarea.bind(this);
+        this.mostrarModalNuevaTarea = this.mostrarModalNuevaTarea.bind(this);
+        this.guardarRegistro = this.guardarRegistro.bind(this);
+        this.guardarTarea = this.guardarTarea.bind(this);
+        }
+
+    async init() {
+        this.setupEventListeners();
+        this.setupToggleFiltros();
+        this.setupColumnToggle();
+        this.setupTableEventListeners();
+        await this.cargarGranjas();
+        await this.cargarDatos();
+    }
+
+    setupEventListeners() {
+        const events = {
+            'btnNuevo': () => this.mostrarModalNuevo(),
+            'btnExportar': () => this.exportarExcel(),
+            'btnLimpiarFiltros': () => this.limpiarFiltros(),
+            'btnAplicarFiltros': () => this.aplicarFiltros(),
+            'btnCancelar': () => this.cerrarModal(),
+            'btnCerrarSubprocesos': () => this.cerrarModalSubprocesos(),
+            'btnNuevaTarea': () => this.mostrarModalNuevaTarea(),
+            'btnCancelarTarea': () => this.cerrarModalTarea(),
+            'btnCerrarTarea': () => this.cerrarModalTarea()
+        };
+
+        Object.entries(events).forEach(([id, handler]) => {
+            document.getElementById(id)?.addEventListener('click', handler);
+        });
+
+        document.getElementById('formObjetivo')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.guardarRegistro();
+        });
+
+        document.getElementById('formTarea')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.guardarTarea();
+        });
+
+        ['tareaFechaInicio', 'tareaFechaFin'].forEach(id => {
+            document.getElementById(id)?.addEventListener('change', () => this.calcularDuracion());
+        });
+
+        document.getElementById('tareaTipo')?.addEventListener('change', () => this.onTipoTareaChange());
+    }
+
+    setupTableEventListeners() {
+        const tbody = document.getElementById('tbodyObjetivos');
+        if (!tbody) return;
+
+        tbody.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-action]');
+            if (!button) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const { action, id, piloto } = button.dataset;
+
+            const actions = {
+                'ver-tareas': () => this.abrirSubprocesos(piloto, id),
+                'ver-tareas-obj': () => this.abrirSubprocesos(piloto, id),
+                'ver-tareas-meta': () => this.abrirSubprocesos(piloto, id),
+                'editar': () => this.editarRegistro(piloto),
+                'eliminar': () => this.eliminarRegistro(id, piloto)
+            };
+
+            actions[action]?.();
+        });
+    }
+
+    setupToggleFiltros() {
+        const btnToggle = document.getElementById('btnToggleFiltros');
+        const filterContent = document.getElementById('filterContent');
+        if (!btnToggle || !filterContent) return;
+
+        btnToggle.addEventListener('click', () => {
+            const isOpen = filterContent.classList.toggle('show');
+            const icon = btnToggle.querySelector('i');
+            icon.classList.toggle('fa-chevron-up', isOpen);
+            icon.classList.toggle('fa-chevron-down', !isOpen);
+        });
+    }
+
+    setupColumnToggle() {
+        const btnToggle = document.getElementById('btnToggleColumns');
+        const dropdown = document.getElementById('columnDropdown');
+
+        btnToggle?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-columns')) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        document.querySelectorAll('.column-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const columnIndex = parseInt(e.target.dataset.column);
+                const cells = document.querySelectorAll(`#tablaObjetivos th:nth-child(${columnIndex + 1}), #tablaObjetivos td:nth-child(${columnIndex + 1})`);
+                cells.forEach(cell => cell.style.display = e.target.checked ? '' : 'none');
+            });
+        });
+    }
+
+    async cargarDatos() {
+        try {
+            this.mostrarCargando(true);
+            const datos = await this.service.getAll();
+            this.datos = Array.isArray(datos) ? datos : [];
+            this.renderizarTabla();
+            this.poblarSelectGranjas();
+
+            const totalElem = document.getElementById('totalRegistros');
+            if (totalElem) totalElem.textContent = `${this.datos.length} registros`;
+        } catch (error) {
+            console.error('Error al cargar datos:', error);
+            this.mostrarNotificacion(this.config.MENSAJES.ERROR.CARGAR_DATOS, 'error');
+        } finally {
+            this.mostrarCargando(false);
+        }
+    }
+
+    renderizarTabla() {
+        const tbody = document.getElementById('tbodyObjetivos');
+        const emptyState = document.getElementById('emptyState');
+
+        if (!tbody) return;
+
+        if (this.datos.length === 0) {
+            tbody.innerHTML = '';
+            emptyState?.classList.remove('hidden');
+            return;
+        }
+
+        emptyState?.classList.add('hidden');
+
+        const grupos = this.agruparPorPiloto(this.datos);
+        tbody.innerHTML = Object.values(grupos).map(grupo => this.renderizarGrupo(grupo)).join('');
+    }
+
+    agruparPorPiloto(datos) {
+        const grupos = {};
+        datos.forEach(item => {
+            const clave = (item.piloto || 'Sin piloto') + '|' + (item.inicio || '') + '|' + (item.fin || '');
+            if (!grupos[clave]) grupos[clave] = [];
+            grupos[clave].push(item);
+        });
+        return grupos;
+    }
+
+    renderizarGrupo(grupo) {
+        const principal = grupo[0];
+        const totalTareas = grupo.reduce((sum, item) => sum + parseInt(item.total_tareas || 0, 10), 0);
+        const tareasCompletadas = grupo.reduce((sum, item) => sum + parseInt(item.tareas_completadas || 0, 10), 0);
+        const progreso = totalTareas > 0 ? Math.round((tareasCompletadas / totalTareas) * 100) : 0;
+        const estadoClass = this.getEstadoClass(principal.estado);
+
+        return grupo.map((registro, index) => this.renderizarFila(registro, grupo, index, progreso, estadoClass, totalTareas, tareasCompletadas)).join('');
+    }
+
+    renderizarFila(registro, grupo, index, progreso, estadoClass, totalTareas, tareasCompletadas) {
+        const principal = grupo[0];
+        const isFirst = index === 0;
+        const rowspan = grupo.length;
+
+        return `
+            <tr class="grupo-row hover:bg-gray-50 transition-colors">
+                ${isFirst ? `
+                    <td class="px-4 py-2 align-top font-medium" rowspan="${rowspan}">
+                        <div class="flex items-center gap-2">
+                            <span class="badge-grupo">${rowspan}</span>
+                            <span>${this.truncate(principal.piloto, 40)}</span>
+                        </div>
+                    </td>
+                ` : ''}
+                <td class="px-4 py-2 align-top">${registro.granja || '-'}</td>
+                <td class="px-4 py-2 align-top">${registro.galpon || '-'}</td>
+                ${this.renderizarCelda(registro.objetivo, 'objetivo', registro.id, index)}
+                ${this.renderizarCelda(registro.meta, 'meta', registro.id, index)}
+                ${isFirst ? `
+                    <td class="px-4 py-2 align-top" rowspan="${rowspan}">${this.formatDate(principal.inicio)}</td>
+                    <td class="px-4 py-2 align-top" rowspan="${rowspan}">${this.formatDate(principal.fin)}</td>
+                    <td class="px-4 py-2 text-center align-top" rowspan="${rowspan}">
+                        <span class="estado-badge ${estadoClass}">${principal.estado}</span>
+                    </td>
+                    <td class="px-4 py-2 align-top" rowspan="${rowspan}">
+                        <div class="flex items-center gap-2">
+                            <div class="progress-bar flex-1">
+                                <div class="progress-fill" style="width: ${progreso}%"></div>
+                            </div>
+                            <span class="text-xs text-gray-500">${progreso}%</span>
+                        </div>
+                        <span class="text-xs text-gray-400">${tareasCompletadas}/${totalTareas} tareas</span>
+                    </td>
+                ` : ''}
+                ${this.renderizarAcciones(registro, principal, isFirst)}
+            </tr>
+        `;
+    }
+
+    renderizarCelda(contenido, tipo, id, index) {
+        if (!contenido) {
+            return '<td class="px-4 py-2"><div class="' + tipo + 's-container"><span class="text-gray-400">-</span></div></td>';
+        }
+        // Solo mostrar el texto, sin botón de ver tareas
+        let html = '<td class="px-4 py-2"><div class="' + tipo + 's-container">';
+        html += '<div class="' + tipo + '-item flex items-center gap-2">' +
+            '<div class="flex-1">' +
+            '<span class="' + tipo + '-numero">' + (index + 1) + '.</span> ' +
+            this.truncate(contenido, 45) +
+            '</div>' +
+            '</div>';
+        html += '</div></td>';
+        return html;
+    }
+
+    renderizarAcciones(registro, principal, isFirst) {
+        return `
+            <td class="px-4 py-2 text-center">
+                <div class="flex items-center justify-center gap-2">
+                    <button data-action="ver-tareas" data-piloto="${principal.piloto}" data-id="${registro.id}"
+                        class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded p-2 transition-all" 
+                        title="Ver tareas">
+                        <i class="fas fa-tasks"></i>
+                    </button>
+                    ${isFirst ? `
+                        <button data-action="editar" data-piloto="${principal.piloto}"
+                            class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded p-2 transition-all" 
+                            title="Editar grupo">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    ` : '<span class="inline-block w-10 h-10"></span>'}
+                    <button data-action="eliminar" data-id="${registro.id}" data-piloto="${principal.piloto}"
+                        class="text-red-600 hover:text-red-800 hover:bg-red-50 rounded p-2 transition-all" 
+                        title="Eliminar esta fila">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+    }
+
+    mostrarModalNuevo() {
+        this.registroSeleccionado = null;
+        this.pilotoActual = null;
+        this.grupoIdsActual = []; // Limpiar IDs del grupo para modo nuevo
+
+        document.getElementById('modalTitle').textContent = 'Nuevo Objetivo';
+        document.getElementById('formObjetivo').reset();
+        document.getElementById('modalId').value = '';
+
+        this.limpiarListasObjetivosMetas();
+        this.inicializarGranjasGalpones();
+        this.toggleModal('modalObjetivo', true);
+    }
+
+    inicializarGranjasGalpones() {
+        const lista = document.getElementById('listaGranjasGalpones');
+        lista.innerHTML = '';
+        this.agregarItemGranjaGalpon();
+
+        // Botón para agregar más combinaciones
+        let btnAgregar = document.getElementById('btnAgregarGranjaGalpon');
+        if (!btnAgregar) {
+            btnAgregar = document.createElement('button');
+            btnAgregar.id = 'btnAgregarGranjaGalpon';
+            btnAgregar.type = 'button';
+            btnAgregar.className = 'mt-2 mb-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition';
+            btnAgregar.innerHTML = '<i class="fas fa-plus"></i> Agregar Granja/Galpón';
+            lista.parentElement.appendChild(btnAgregar);
+        }
+        btnAgregar.onclick = () => this.agregarItemGranjaGalpon();
+    }
+    /*
+        agregarItemGranjaGalpon(combo = { granja: '', galpon: '' }, mostrarBotonEliminar = true) {
+            const lista = document.getElementById('listaGranjasGalpones');
+    
+            // Guardar valores seleccionados actuales de todas las filas
+            const valoresActuales = Array.from(lista.querySelectorAll('.granja-galpon-item')).map(item => ({
+                granja: item.querySelector('.granja-select')?.value || '',
+                galpon: item.querySelector('.galpon-select')?.value || ''
+            }));
+    
+            // Solo permitir agregar uno más si no hay más de uno vacío
+            const vacios = valoresActuales.filter(v => !v.granja && !v.galpon).length;
+            if (vacios > 0) return; // Ya hay uno vacío, no agregues más
+    
+            // Agregar la nueva fila
+            const item = this.crearItemGranjaGalpon(combo, mostrarBotonEliminar);
+            lista.appendChild(item);
+    
+            // Evento para eliminar
+            const btnEliminar = item.querySelector('.btn-eliminar-granja-galpon');
+            btnEliminar.onclick = () => {
+                item.remove();
+                // Si solo queda uno, ocultar su botón eliminar
+                const items = lista.querySelectorAll('.granja-galpon-item');
+                if (items.length === 1) {
+                    items[0].querySelector('.btn-eliminar-granja-galpon').style.display = 'none';
+                }
+            };
+    
+            // Mostrar botón eliminar solo si hay más de uno
+            const items = lista.querySelectorAll('.granja-galpon-item');
+            items.forEach((el, idx) => {
+                el.querySelector('.btn-eliminar-granja-galpon').style.display = (items.length > 1) ? 'block' : 'none';
+            });
+    
+            // Restaurar valores seleccionados previos en todas las filas menos la nueva
+            setTimeout(() => {
+                const items = lista.querySelectorAll('.granja-galpon-item');
+                items.forEach((el, idx) => {
+                    // Solo restaurar si hay un valor previo
+                    if (valoresActuales[idx]) {
+                        const granjaSelect = el.querySelector('.granja-select');
+                        const galponSelect = el.querySelector('.galpon-select');
+                        if (granjaSelect && valoresActuales[idx].granja) {
+                            granjaSelect.value = valoresActuales[idx].granja;
+                            // Lanzar evento change para cargar galpones
+                            granjaSelect.dispatchEvent(new Event('change'));
+                        }
+                        // Restaurar galpón después de cargar galpones
+                        setTimeout(() => {
+                            if (galponSelect && valoresActuales[idx].galpon) {
+                                galponSelect.value = valoresActuales[idx].galpon;
+                            }
+                        }, 150);
+                    }
+                });
+            }, 120);
+    
+            // Si hay granjas disponibles, poblar el select de la nueva fila
+            setTimeout(() => {
+                const select = item.querySelector('.granja-select');
+                if (select && this.granjasDisponibles.length > 0) {
+                    this.poblarSelectGranjas(select);
+                }
+            }, 100);
+        }
+        
+    */
+    agregarItemGranjaGalpon(combo = { granja: '', galpon: '' }, mostrarBotonEliminar = true) {
+        const lista = document.getElementById('listaGranjasGalpones');
+
+        const valoresActuales = Array.from(lista.querySelectorAll('.granja-galpon-item')).map(item => ({
+            granja: item.querySelector('.granja-select')?.value || '',
+            galpon: item.querySelector('.galpon-select')?.value || ''
+        }));
+
+        const vacios = valoresActuales.filter(v => !v.granja && !v.galpon).length;
+        if (vacios > 0 && valoresActuales.length > 0) return;
+
+        const nuevoItem = this.crearItemGranjaGalpon(combo, true);
+        lista.appendChild(nuevoItem);
+
+        const btnEliminar = nuevoItem.querySelector('.btn-eliminar-granja-galpon');
+        if (btnEliminar) {
+            btnEliminar.onclick = () => {
+                nuevoItem.remove();
+                const items = lista.querySelectorAll('.granja-galpon-item');
+                items.forEach(item => {
+                    const btn = item.querySelector('.btn-eliminar-granja-galpon');
+                    if (btn) btn.style.display = items.length > 1 ? 'block' : 'none';
+                });
+            };
+        }
+
+        const items = lista.querySelectorAll('.granja-galpon-item');
+        items.forEach(item => {
+            const btn = item.querySelector('.btn-eliminar-granja-galpon');
+            if (btn) btn.style.display = items.length > 1 ? 'block' : 'none';
+        });
+
+        setTimeout(() => {
+            const todosLosItems = lista.querySelectorAll('.granja-galpon-item');
+
+            todosLosItems.forEach((item, idx) => {
+                const granjaSelect = item.querySelector('.granja-select');
+                const galponSelect = item.querySelector('.galpon-select');
+
+                if (granjaSelect && this.granjasDisponibles?.length > 0) {
+                    this.poblarSelectGranjas(granjaSelect);
+                    granjaSelect.addEventListener('change', (e) => {
+                        this.cargarGalponesParaSelect(e.target);
+                    });
+                }
+
+                if (valoresActuales[idx]) {
+                    if (valoresActuales[idx].granja) {
+                        granjaSelect.value = valoresActuales[idx].granja;
+                        if (valoresActuales[idx].galpon) {
+                            this.cargarGalponesParaSelect(granjaSelect).then(() => {
+                                galponSelect.value = valoresActuales[idx].galpon;
+                            });
+                        }
+                    }
+                }
+            });
+        }, 50);
+    }
+
+
+    limpiarListasObjetivosMetas() {
+        const templates = {
+            objetivo: { clase: 'objetivo', placeholder: 'Describe el objetivo...' },
+            meta: { clase: 'meta', placeholder: 'Describe la meta...' }
+        };
+
+        Object.entries(templates).forEach(([tipo, config]) => {
+            const lista = document.getElementById(`lista${tipo.charAt(0).toUpperCase() + tipo.slice(1)}s`);
+            lista.innerHTML = `
+                <div class="${config.clase}-item flex gap-2">
+                    <textarea rows="2" placeholder="${config.placeholder}" 
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${config.clase}-text"></textarea>
+                    <button type="button" class="btn-eliminar-${config.clase} text-red-600 hover:text-red-800 px-2" style="display: none;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        });
+    }
+
+    editarRegistro(piloto) {
+        const principal = this.datos.find(d => d.piloto === piloto);
+        if (!principal) return;
+        
+        const claveGrupo = piloto + '|' + (principal.inicio || '') + '|' + (principal.fin || '');
+        const grupoRegistros = this.datos.filter(d => {
+            const clave = (d.piloto || 'Sin piloto') + '|' + (d.inicio || '') + '|' + (d.fin || '');
+            return clave === claveGrupo;
+        });
+        
+        this.registroSeleccionado = principal;
+        this.pilotoActual = piloto;
+        this.grupoIdsActual = grupoRegistros.map(r => r.id);
+
+        document.getElementById('modalTitle').textContent = 'Editar Objetivo';
+        document.getElementById('modalId').value = principal.id;
+        document.getElementById('modalPiloto').value = principal.piloto || '';
+
+        this.cargarGranjasGalponesDeGrupo(grupoRegistros);
+        this.cargarObjetivosMetasDeGrupo(grupoRegistros);
+
+        document.getElementById('modalInicio').value = principal.inicio || '';
+        document.getElementById('modalFin').value = principal.fin || '';
+        document.getElementById('modalEstado').value = principal.estado || 'Pendiente';
+
+        this.toggleModal('modalObjetivo', true);
+    }
+
+    cargarGranjasGalponesDeGrupo(grupoRegistros) {
+    const lista = document.getElementById('listaGranjasGalpones');
+    lista.innerHTML = '';
+    
+    const combinacionesUnicas = this.obtenerCombinacionesUnicas(grupoRegistros);
+    
+    combinacionesUnicas.forEach((combo, index) => {
+        const item = this.crearItemGranjaGalpon(combo, combinacionesUnicas.length > 1);
+        lista.appendChild(item);
+        
+        // Configurar evento de eliminación
+        const btnEliminar = item.querySelector('.btn-eliminar-granja-galpon');
+        if (btnEliminar) {
+            btnEliminar.onclick = () => {
+                item.remove();
+                const items = lista.querySelectorAll('.granja-galpon-item');
+                items.forEach(el => {
+                    const btn = el.querySelector('.btn-eliminar-granja-galpon');
+                    if (btn) btn.style.display = items.length > 1 ? 'block' : 'none';
+                });
+            };
+        }
+    });
+}
+
+    obtenerCombinacionesUnicas(registros) {
+        const combinaciones = [];
+        const vistos = new Set();
+
+        registros.forEach(reg => {
+            const clave = `${reg.granja}|${reg.galpon || ''}`;
+            if (!vistos.has(clave)) {
+                vistos.add(clave);
+                combinaciones.push({ granja: reg.granja, galpon: reg.galpon });
+            }
+        });
+
+        return combinaciones.length > 0 ? combinaciones : [{ granja: '', galpon: '' }];
+    }
+
+    crearItemGranjaGalpon(combo, mostrarBotonEliminar) {
+        const codigoGranja = combo.granja ? combo.granja.split(' - ')[0].trim() : '';
+        const codigoGalpon = combo.galpon ? combo.galpon.split(' - ')[0].trim() : '';
+
+        const item = document.createElement('div');
+        item.className = 'granja-galpon-item flex gap-2';
+        item.innerHTML = `
+            <select class="granja-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+                <option value="">-- Seleccione granja --</option>
+            </select>
+            <select class="galpon-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                <option value="">-- Seleccione granja primero --</option>
+            </select>
+            <button type="button" class="btn-eliminar-granja-galpon text-red-600 hover:text-red-800 px-2" style="display: ${mostrarBotonEliminar ? 'block' : 'none'};">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+
+        const granjaSelect = item.querySelector('.granja-select');
+        const galponSelect = item.querySelector('.galpon-select');
+
+        if (this.granjasDisponibles.length > 0) {
+            this.poblarSelectGranjas(granjaSelect);
+
+            if (codigoGranja) {
+                granjaSelect.value = codigoGranja;
+                this.cargarGalponesParaSelect(granjaSelect).then(() => {
+                    if (codigoGalpon) galponSelect.value = codigoGalpon;
+                });
+            }
+        }
+
+        return item;
+    }
+
+    cargarObjetivosMetasDeGrupo(grupoRegistros) {
+        if (grupoRegistros.length === 0) return;
+        
+        // Extraer objetivos y metas únicos de todos los registros del grupo
+        const objetivosUnicos = new Set();
+        const metasUnicas = new Set();
+        
+        grupoRegistros.forEach(reg => {
+            if (reg.objetivo) objetivosUnicos.add(reg.objetivo);
+            if (reg.meta) metasUnicas.add(reg.meta);
+        });
+        
+        this.cargarItemsEnModal('Objetivos', Array.from(objetivosUnicos));
+        this.cargarItemsEnModal('Metas', Array.from(metasUnicas));
+    }
+
+    cargarItemsEnModal(tipo, items) {
+        const lista = document.getElementById('lista' + tipo);
+        lista.innerHTML = '';
+
+        let itemsArray = [];
+        if (Array.isArray(items)) {
+            itemsArray = items;
+        } else if (typeof items === 'string') {
+            itemsArray = [items];
+        }
+
+        if (itemsArray.length === 0) itemsArray.push('');
+
+        for (let index = 0; index < itemsArray.length; index++) {
+            const item = itemsArray[index];
+            const div = document.createElement('div');
+            const clase = tipo.toLowerCase().slice(0, -1);
+            div.className = clase + '-item flex gap-2';
+            div.innerHTML = '<textarea rows="2" placeholder="Describe ' + (tipo === 'Objetivos' ? 'el objetivo' : 'la meta') + '..." ' +
+                'class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ' + clase + '-text">' + item.trim() + '</textarea>' +
+                '<button type="button" class="btn-eliminar-' + clase + ' text-red-600 hover:text-red-800 px-2" style="display: ' + (itemsArray.length > 1 ? 'block' : 'none') + ';">' +
+                '<i class="fas fa-trash"></i></button>';
+            lista.appendChild(div);
+        }
+    }
+
+    async guardarRegistro() {
+        try {
+            const objetivosTextos = this.obtenerTextosDeTextareas('.objetivo-text');
+            const metasTextos = this.obtenerTextosDeTextareas('.meta-text');
+            const granjasGalpones = this.obtenerGranjasGalpones();
+
+            if (!this.validarDatosGuardado(objetivosTextos, metasTextos, granjasGalpones)) return;
+
+            const datosComunes = this.obtenerDatosComunesFormulario();
+
+            // Verificar si es edición usando grupoIdsActual en lugar de modalId
+            if (this.grupoIdsActual && this.grupoIdsActual.length > 0) {
+                await this.actualizarRegistrosExistentes(objetivosTextos, metasTextos, granjasGalpones, datosComunes);
+            } else {
+                await this.crearNuevosRegistros(objetivosTextos, metasTextos, granjasGalpones, datosComunes);
+            }
+
+            this.cerrarModal();
+            await this.cargarDatos();
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            this.mostrarNotificacion(this.config.MENSAJES.ERROR.GUARDAR, 'error');
+        }
+    }
+
+
+    obtenerTextosDeTextareas(selector) {
+        return Array.from(document.querySelectorAll(selector))
+            .map(textarea => textarea.value.trim())
+            .filter(texto => texto);
+    }
+
+    obtenerGranjasGalpones() {
+        const granjasGalpones = [];
+        document.querySelectorAll('.granja-galpon-item').forEach(item => {
+            const granjaSelect = item.querySelector('.granja-select');
+            const galponSelect = item.querySelector('.galpon-select');
+
+            if (granjaSelect?.value) {
+                const codigoGranja = granjaSelect.value;
+                const nombreGranja = granjaSelect.selectedOptions[0]?.dataset.nombre || '';
+                const codigoGalpon = galponSelect?.value || '';
+                const nombreGalpon = galponSelect?.selectedOptions[0]?.dataset.nombre || '';
+
+                granjasGalpones.push({
+                    granja: `${codigoGranja} - ${nombreGranja}`.trim(),
+                    galpon: codigoGalpon ? `${codigoGalpon} - ${nombreGalpon}`.trim() : ''
+                });
+            }
+        });
+        return granjasGalpones;
+    }
+
+    validarDatosGuardado(objetivos, metas, granjas) {
+        if (objetivos.length === 0) {
+            window.SwalHelpers.showWarning('Debe agregar al menos un objetivo');
+            return false;
+        }
+        if (metas.length === 0) {
+            window.SwalHelpers.showWarning('Debe agregar al menos una meta');
+            return false;
+        }
+        if (granjas.length === 0) {
+            window.SwalHelpers.showWarning('Debe seleccionar al menos una granja');
+            return false;
+        }
+        return true;
+    }
+
+    obtenerDatosComunesFormulario() {
+        return {
+            piloto: document.getElementById('modalPiloto').value,
+            inicio: document.getElementById('modalInicio').value,
+            fin: document.getElementById('modalFin').value,
+            estado: document.getElementById('modalEstado').value
+        };
+    }
+
+    async actualizarRegistrosExistentes(objetivos, metas, granjasGalpones, datosComunes) {
+        console.log('🔄 Actualizando registros existentes...');
+        console.log('IDs del grupo actual:', this.grupoIdsActual);
+
+        // Obtener todos los registros del grupo usando piloto+inicio+fin
+        const piloto = datosComunes.piloto;
+        const grupoRegistros = this.obtenerRegistrosDeGrupo(piloto);
+
+        // Calcular cuántas filas necesitamos
+        const maxFilas = Math.max(granjasGalpones.length, objetivos.length, metas.length);
+        
+        // ACTUALIZAR O CREAR filas emparejando por índice
+        for (let i = 0; i < maxFilas; i++) {
+            const granja = granjasGalpones[i]?.granja || '';
+            const galpon = granjasGalpones[i]?.galpon || '';
+            const objetivo = objetivos[i] || '';
+            const meta = metas[i] || '';
+            
+            if (granja || galpon || objetivo || meta) {
+                const payload = {
+                    ...datosComunes,
+                    granja: granja,
+                    galpon: galpon,
+                    objetivo: objetivo,
+                    meta: meta
+                };
+                
+                // Si existe un registro en este índice, ACTUALIZARLO; si no, CREARLO
+                if (grupoRegistros[i]) {
+                    await this.service.update({ id: grupoRegistros[i].id, ...payload });
+                } else {
+                    await this.service.create(payload);
+                }
+            }
+        }
+        
+        // Eliminar registros sobrantes (si había más registros que los nuevos)
+        for (let i = maxFilas; i < grupoRegistros.length; i++) {
+            await this.service.delete(grupoRegistros[i].id);
+        }
+        
+        window.SwalHelpers.showSuccess(this.config.MENSAJES.EXITO.ACTUALIZADO);
+    }
+
+    agregarItemGranjaGalpon(combo = { granja: '', galpon: '' }, mostrarBotonEliminar = true) {
+        const lista = document.getElementById('listaGranjasGalpones');
+
+        const valoresActuales = Array.from(lista.querySelectorAll('.granja-galpon-item')).map(item => ({
+            granja: item.querySelector('.granja-select')?.value || '',
+            galpon: item.querySelector('.galpon-select')?.value || ''
+        }));
+
+        const vacios = valoresActuales.filter(v => !v.granja && !v.galpon).length;
+        if (vacios > 0 && valoresActuales.length > 0) return;
+
+        const nuevoItem = this.crearItemGranjaGalpon(combo, true);
+        lista.appendChild(nuevoItem);
+
+        const btnEliminar = nuevoItem.querySelector('.btn-eliminar-granja-galpon');
+        if (btnEliminar) {
+            btnEliminar.onclick = () => {
+                nuevoItem.remove();
+                const items = lista.querySelectorAll('.granja-galpon-item');
+                items.forEach(item => {
+                    const btn = item.querySelector('.btn-eliminar-granja-galpon');
+                    if (btn) btn.style.display = items.length > 1 ? 'block' : 'none';
+                });
+            };
+        }
+
+        const items = lista.querySelectorAll('.granja-galpon-item');
+        items.forEach(item => {
+            const btn = item.querySelector('.btn-eliminar-granja-galpon');
+            if (btn) btn.style.display = items.length > 1 ? 'block' : 'none';
+        });
+
+        setTimeout(() => {
+            const todosLosItems = lista.querySelectorAll('.granja-galpon-item');
+
+            todosLosItems.forEach((item, idx) => {
+                const granjaSelect = item.querySelector('.granja-select');
+                const galponSelect = item.querySelector('.galpon-select');
+
+                if (granjaSelect && this.granjasDisponibles?.length > 0) {
+                    this.poblarSelectGranjas(granjaSelect);
+                    granjaSelect.addEventListener('change', (e) => {
+                        this.cargarGalponesParaSelect(e.target);
+                    });
+                }
+
+                if (valoresActuales[idx]) {
+                    if (valoresActuales[idx].granja) {
+                        granjaSelect.value = valoresActuales[idx].granja;
+                        if (valoresActuales[idx].galpon) {
+                            this.cargarGalponesParaSelect(granjaSelect).then(() => {
+                                galponSelect.value = valoresActuales[idx].galpon;
+                            });
+                        }
+                    }
+                }
+            });
+        }, 50);
+    }
+
+
+    async procesarComboGranjaGalpon(combo, grupoRegistros, objetivos, metas, datosComunes) {
+        const existentesCombo = grupoRegistros.filter(r => r.granja === combo.granja && r.galpon === combo.galpon);
+        
+        const objetivosStr = objetivos.join('\n');
+        const metasStr = metas.join('\n');
+
+        const payload = {
+            ...datosComunes,
+            granja: combo.granja,
+            galpon: combo.galpon,
+            objetivo: objetivosStr,
+            meta: metasStr
+        };
+
+        if (existentesCombo[0]) {
+            await this.service.update({ id: existentesCombo[0].id, ...payload });
+            
+            for (let j = 1; j < existentesCombo.length; j++) {
+                await this.service.delete(existentesCombo[j].id);
+            }
+        } else {
+            console.log('➕ Creando nuevo galpón y copiando tareas del grupo');
+            const nuevoRegistro = await this.service.create(payload);
+            if (grupoRegistros.length > 0 && nuevoRegistro?.data) {
+                const idNuevo = nuevoRegistro.data.id || nuevoRegistro.id;
+                
+                let idOrigenConTareas = null;
+                for (const reg of grupoRegistros) {
+                    const tareas = await this.service.getSubprocesos(reg.id);
+                    if (tareas && tareas.length > 0) {
+                        idOrigenConTareas = reg.id;
+                        break;
+                    }
+                }
+                
+                if (idOrigenConTareas) {
+                    console.log('📋 Copiando tareas desde:', idOrigenConTareas, 'hacia:', idNuevo);
+                    await this.copiarTareasDelGrupo(idOrigenConTareas, idNuevo);
+                } else {
+                    console.log('ℹ️ No hay tareas para copiar en el grupo');
+                }
+            }
+        }
+    }
+
+    async eliminarCombinacionesObsoletas(grupoRegistros, clavesNuevas) {
+        for (const reg of grupoRegistros) {
+            const claveReg = `${reg.granja}|${reg.galpon}`;
+            if (!clavesNuevas.has(claveReg)) {
+                await this.service.delete(reg.id);
+            }
+        }
+    }
+
+        
+    async crearNuevosRegistros(objetivos, metas, granjasGalpones, datosComunes) {
+        const registrosCreados = [];
+        
+        // Crear filas emparejando por índice: tantas filas como el máximo de elementos
+        const maxFilas = Math.max(granjasGalpones.length, objetivos.length, metas.length);
+        
+        for (let i = 0; i < maxFilas; i++) {
+            // Si hay elemento en el índice actual, usarlo; si no, vacío
+            const granja = granjasGalpones[i]?.granja || '';
+            const galpon = granjasGalpones[i]?.galpon || '';
+            const objetivo = objetivos[i] || '';
+            const meta = metas[i] || '';
+            
+            // Crear fila siempre que haya al menos un dato
+            if (granja || galpon || objetivo || meta) {
+                const payload = {
+                    ...datosComunes,
+                    granja: granja,
+                    galpon: galpon,
+                    objetivo: objetivo,
+                    meta: meta
+                };
+                const nuevoRegistro = await this.service.create(payload);
+                const idNuevo = nuevoRegistro?.data?.id || nuevoRegistro?.id;
+                if (idNuevo) registrosCreados.push(idNuevo);
+            }
+        }
+        window.SwalHelpers.showSuccess(this.config.MENSAJES.EXITO.GUARDADO);
+    }
+
+    async copiarTareasDelGrupo(idOrigen, idDestino) {
+        try {
+            const tareasOrigen = await this.service.getSubprocesos(idOrigen);
+
+            if (tareasOrigen?.length > 0) {
+                for (const tarea of tareasOrigen) {
+                    await this.service.createSubproceso({
+                        id_objetivo: idDestino,
+                        nombre_tarea: tarea.nombre_tarea,
+                        fecha_inicio: tarea.fecha_inicio,
+                        fecha_fin: tarea.fecha_fin,
+                        duracion_dias: tarea.duracion_dias,
+                        nombres_recursos: tarea.nombres_recursos,
+                        presupuesto: tarea.presupuesto,
+                        estado_completado_pendiente: tarea.estado_completado_pendiente,
+                        es_tarea_principal: tarea.es_tarea_principal,
+                        id_tarea_padre: tarea.id_tarea_padre
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error al copiar tareas:', error);
+        }
+    }
+
+    async abrirSubprocesos(piloto, idObjetivo) {
+        // Buscar el registro principal por piloto
+        this.objetivoActual = this.datos.find(d => d.piloto === piloto);
+        if (!this.objetivoActual) {
+            window.SwalHelpers.showError('Registro no encontrado');
+            return;
+        }
+        const titulo = this.objetivoActual.objetivo || this.objetivoActual.meta || this.objetivoActual.piloto || 'Sin piloto';
+        document.getElementById('modalSubTitle').textContent = `Tareas de: ${titulo}`;
+        document.getElementById('subprocesosInfo').innerHTML = this.generarInfoSubprocesos(this.objetivoActual);
+        await this.cargarTareasPorPiloto(this.objetivoActual.piloto);
+        this.toggleModal('modalSubprocesos', true);
+    }
+
+    // Nueva función: cargar todas las tareas por piloto
+    async cargarTareasPorPiloto(piloto) {
+        try {
+            // Obtener todos los objetivos/metas de ese piloto
+            const registrosPiloto = this.datos.filter(d => d.piloto === piloto);
+            // Obtener todos los id_objetivo de ese piloto
+            const idsObjetivo = registrosPiloto.map(r => r.id);
+            // Obtener todas las tareas de todos los objetivos/metas de ese piloto
+            let tareas = [];
+            for (const id of idsObjetivo) {
+                const t = await this.service.getSubprocesos(id);
+                if (Array.isArray(t)) tareas = tareas.concat(t);
+            }
+            this.tareasActuales = tareas;
+            this.renderizarTareas(this.tareasActuales);
+        } catch (error) {
+            console.error('Error al cargar tareas:', error);
+            window.SwalHelpers.showError('Error al cargar las tareas');
+            this.tareasActuales = [];
+            this.renderizarTareas([]);
+        }
+    }
+
+    generarInfoSubprocesos(registro) {
+        const campos = [
+            { label: 'Piloto', valor: registro.piloto },
+            { label: 'Granja', valor: registro.granja },
+            { label: 'Galpón', valor: registro.galpon },
+            { label: 'Objetivo', valor: registro.objetivo },
+            { label: 'Meta', valor: registro.meta }
+
+        ].filter(c => c.valor);
+        // { label: 'Presupuesto', valor: (registro.presupuesto !== undefined && registro.presupuesto !== null && registro.presupuesto !== '') ? `$${Number(registro.presupuesto).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-' }
+        //].filter(c => c.valor !== undefined && c.valor !== null && c.valor !== '');
+
+        return `
+            <div class="flex flex-wrap items-center gap-4 text-sm">
+                ${campos.map(c => `
+                    <div class="flex items-center gap-2">
+                        <span class="font-semibold text-gray-700">${c.label}:</span>
+                        <span class="text-gray-900">${c.valor}</span>
+                    </div>
+                    ${campos[campos.length - 1] !== c ? '<div class="h-4 w-px bg-gray-300"></div>' : ''}
+                `).join('')}
+            </div>
+        `;
+    }
+
+    async cargarTareasPorRegistro(idObjetivo) {
+        try {
+            const tareas = await this.service.getSubprocesos(idObjetivo);
+            this.tareasActuales = tareas || [];
+            this.renderizarTareas(this.tareasActuales);
+        } catch (error) {
+            console.error('Error al cargar tareas:', error);
+            window.SwalHelpers.showError('Error al cargar las tareas');
+            this.tareasActuales = [];
+            this.renderizarTareas([]);
+        }
+    }
+
+    obtenerRegistrosDeGrupo(piloto) {
+        const principal = this.datos.find(d => d.piloto === piloto);
+        if (!principal) return [];
+        
+        const claveGrupo = piloto + '|' + (principal.inicio || '') + '|' + (principal.fin || '');
+        return this.datos.filter(d => {
+            const clave = (d.piloto || 'Sin piloto') + '|' + (d.inicio || '') + '|' + (d.fin || '');
+            return clave === claveGrupo;
+        });
+    }
+
+    async eliminarRegistro(id, piloto) {
+        console.log('🤔 Solicitando confirmación para eliminar registro:', id);
+        
+        const confirmado = await window.SwalHelpers.showConfirm(
+            `¿Eliminar este registro?`,
+            'Esta acción no se puede deshacer'
+        );
+        
+        console.log('✅ Resultado de confirmación:', confirmado);
+        
+        if (!confirmado) {
+            console.log('❌ Eliminación cancelada por el usuario');
+            return;
+        }
+
+        console.log('🗑️ Procediendo con eliminación del registro...');
+        
+        try {
+            await this.service.delete(id);
+            window.SwalHelpers.showSuccess('Registro eliminado correctamente');
+            await this.cargarDatos();
+        } catch (error) {
+            console.error('Error:', error);
+            window.SwalHelpers.showError('Error al eliminar el registro');
+        }
+    }
+
+    async aplicarFiltros() {
+        try {
+            this.mostrarCargando(true);
+
+            const filtros = {
+                fechaInicio: document.getElementById('filterFechaInicio').value,
+                fechaFin: document.getElementById('filterFechaFin').value,
+                granja: document.getElementById('filterGranja').value,
+                estado: document.getElementById('filterEstado').value
+            };
+
+            const resultado = await this.service.getFiltered(filtros);
+            this.datos = resultado.data || resultado;
+            this.renderizarTabla();
+
+            const totalElem = document.getElementById('totalRegistros');
+            if (totalElem) totalElem.textContent = this.datos.length + ' registros';
+        } catch (error) {
+            console.error('Error al filtrar:', error);
+            window.SwalHelpers.showError('Error al aplicar filtros');
+        } finally {
+            this.mostrarCargando(false);
+        }
+    }
+
+    limpiarFiltros() {
+        ['filterFechaInicio', 'filterFechaFin', 'filterGranja', 'filterEstado'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        this.cargarDatos();
+    }
+
+    renderizarTareas(tareas) {
+        const tbody = document.getElementById('tbodySubprocesos');
+
+        if (tareas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500">No hay tareas registradas</td></tr>';
+            return;
+        }
+
+        const arbolTareas = this.construirArbolTareas(tareas);
+        tbody.innerHTML = arbolTareas.map((tarea, idx) =>
+            this.renderizarTareaConHijos(tarea, [], idx + 1)
+        ).join('');
+    }
+
+    renderizarTareaConHijos(tarea, numeracion, numeroEnNivel) {
+        const nuevaNumeracion = numeracion.length === 0 ? [numeroEnNivel] : [...numeracion, numeroEnNivel];
+        const nivel = nuevaNumeracion.length - 1;
+        const estadoClass = this.getEstadoClass(tarea.estado_completado_pendiente);
+
+        const iconos = ['fa-star text-yellow-500', 'fa-angle-right text-blue-400', 'fa-angle-double-right text-indigo-400'];
+        const icono = iconos[nivel] || 'fa-chevron-right text-gray-400';
+
+        let html = `
+            <tr class="hover:bg-gray-50 ${nivel === 0 ? 'bg-blue-50' : ''} border-b border-gray-100">
+                <td class="px-3 py-2">
+                    <div class="flex items-center gap-1" style="padding-left: ${nivel * 24}px">
+                        <span class="text-sm min-w-[40px] ${nivel === 0 ? 'font-bold text-blue-800' : 'text-gray-600'}">${nuevaNumeracion.join('.')}</span>
+                        <i class="fas ${icono} mr-1"></i>
+                        <span class="${nivel === 0 ? 'font-bold' : ''}">${tarea.nombre_tarea}</span>
+                        ${tarea.hijos?.length > 0 ? `<span class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${tarea.hijos.length}</span>` : ''}
+                    </div>
+                </td>
+                <td class="px-3 py-2 text-center text-sm">${tarea.duracion_dias || '-'}</td>
+                <td class="px-3 py-2 text-sm">${this.formatDate(tarea.fecha_inicio)}</td>
+                <td class="px-3 py-2 text-sm">${this.formatDate(tarea.fecha_fin)}</td>
+                <td class="px-3 py-2 text-sm text-gray-500">${tarea.predecesoras || '-'}</td>
+                <td class="px-3 py-2 text-sm">${tarea.nombres_recursos || '-'}</td>
+                <td class="px-3 py-2 text-right text-sm">${(tarea.presupuesto !== undefined && tarea.presupuesto !== null && tarea.presupuesto !== '') ? `S/${Number(tarea.presupuesto).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}</td>
+                <td class="px-3 py-2 text-center">
+                    <span class="estado-badge ${estadoClass} text-xs">${tarea.estado_completado_pendiente}</span>
+                </td>
+                <td class="px-3 py-2 text-center">
+                    <div class="flex gap-2 justify-center">
+                        <button onclick="controller.editarTarea('${tarea.id_tarea}')" 
+                            class="text-blue-600 hover:text-blue-800 transition" title="Editar">
+                            <i class="fas fa-edit text-sm"></i>
+                        </button>
+                        <button onclick="controller.eliminarTarea('${tarea.id_tarea}')" 
+                            class="text-red-600 hover:text-red-800 transition" title="Eliminar">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        if (tarea.hijos?.length > 0) {
+            html += tarea.hijos.map((hijo, idx) =>
+                this.renderizarTareaConHijos(hijo, nuevaNumeracion, idx + 1)
+            ).join('');
+        }
+
+        return html;
+    }
+
+    mostrarModalNuevaTarea() {
+    if (!this.objetivoActual?.id) {
+        window.SwalHelpers.showError('Error: No hay objetivo seleccionado');
+        return;
+    }
+
+    document.getElementById('modalTareaTitle').textContent = 'Nueva Tarea';
+    document.getElementById('formTarea').reset();
+    document.getElementById('tareaId').value = '';
+    document.getElementById('tareaIdObjetivo').value = this.objetivoActual.id;
+    document.getElementById('tareaTipo').value = 'principal';
+    document.getElementById('contenedorTareaPadre').classList.add('hidden');
+    
+    // Limpiar campo de predecesoras
+    const campoPredesesoras = document.getElementById('tareaPredesesoras');
+    if (campoPredesesoras) campoPredesesoras.value = '';
+
+    // ✅ Ocultar fechas anteriores (solo visible en edición)
+    const contenedorFechasAnteriores = document.getElementById('contenedorFechasAnteriores');
+    if (contenedorFechasAnteriores) {
+        contenedorFechasAnteriores.classList.add('hidden');
+    }
+
+    this.cargarTareasPrincipalesEnSelector();
+    
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('tareaFechaInicio').value = hoy;
+    document.getElementById('tareaFechaFin').value = hoy;
+    document.getElementById('tareaDuracion').value = '1';
+
+    this.toggleModal('modalTarea', true);
+}
+
+
+    cargarTareasPrincipalesEnSelector() {
+        const select = document.getElementById('tareaPadre');
+        if (!select) {
+            console.error('❌ No se encontró el elemento tareaPadre');
+            return;
+        }
+
+        const tareaEditandoId = document.getElementById('tareaId').value;
+        select.innerHTML = '<option value="">-- Seleccione tarea padre --</option>';
+
+        if (!this.tareasActuales || this.tareasActuales.length === 0) {
+            console.warn('⚠️ No hay tareas actuales disponibles');
+            return;
+        }
+
+        // Mostrar la jerarquía en el texto de cada opción
+        const tareasJerarquicas = this.construirArbolTareas(this.tareasActuales);
+        const agregarOpciones = (tareas, nivel = 0) => {
+            tareas.forEach(tarea => {
+                // Excluir la tarea que se está editando y sus descendientes
+                if (tarea.id_tarea === tareaEditandoId) return;
+                if (this.esDescendienteDe(tarea, tareaEditandoId)) return;
+
+                // Obtener la jerarquía
+                const jerarquia = this.getJerarquiaTarea(tarea.id_tarea);
+                const indentacion = '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(nivel);
+                const option = document.createElement('option');
+                option.value = tarea.id_tarea;
+                option.innerHTML = `${indentacion}${jerarquia} - ${tarea.nombre_tarea}`;
+                select.appendChild(option);
+
+                // Recursivo para hijos
+                if (tarea.hijos?.length > 0) {
+                    agregarOpciones(tarea.hijos, nivel + 1);
+                }
+            });
+        };
+        agregarOpciones(tareasJerarquicas);
+    }
+
+
+    construirArbolTareas(tareas) {
+        console.log('🏗️ Construyendo árbol de tareas...');
+        
+        // Crear mapa de tareas con sus hijos
+        const mapaTareas = {};
+        tareas.forEach(t => {
+            mapaTareas[t.id_tarea] = { ...t, hijos: [] };
+        });
+
+        console.log('🗺️ Mapa de tareas creado:', Object.keys(mapaTareas).length, 'tareas');
+
+        // Organizar en estructura jerárquica
+        const raices = [];
+        Object.values(mapaTareas).forEach(tarea => {
+            // Es raíz si es tarea principal o no tiene padre
+            if (tarea.es_tarea_principal == 1 || !tarea.id_tarea_padre) {
+                console.log('🌱 Tarea raíz encontrada:', tarea.nombre_tarea, '(id:', tarea.id_tarea + ')');
+                raices.push(tarea);
+            } else {
+                // Buscar su padre
+                const padre = mapaTareas[tarea.id_tarea_padre];
+                if (padre) {
+                    console.log('🔗 Vinculando', tarea.nombre_tarea, 'a padre', padre.nombre_tarea);
+                    padre.hijos.push(tarea);
+                } else {
+                    console.warn('⚠️ Padre no encontrado para tarea:', tarea.nombre_tarea, '(padre esperado:', tarea.id_tarea_padre + ')');
+                    raices.push(tarea);
+                }
+            }
+        });
+
+        console.log('🌲 Raíces del árbol:', raices.length);
+        return raices;
+    }
+
+    renderizarOpcionesTareasJerarquicas(tareas, select, tareaEditandoId, nivel) {
+        const iconos = ['⭐', '└─', '&nbsp;&nbsp;└─'];
+        const indentacion = '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(nivel);
+
+        console.log(`📝 Renderizando ${tareas.length} tareas en nivel ${nivel}`);
+
+        tareas.forEach(tarea => {
+            // Excluir la tarea que se está editando y sus descendientes
+            if (tarea.id_tarea === tareaEditandoId) {
+                console.log('⏭️ Omitiendo tarea que se está editando:', tarea.nombre_tarea);
+                return;
+            }
+            
+            // Evitar ciclos: no permitir elegir como padre un descendiente de la tarea en edición
+            if (this.esDescendienteDe(tarea, tareaEditandoId)) {
+                console.log('⏭️ Omitiendo descendiente del editado:', tarea.nombre_tarea);
+                return;
+            }
+
+            console.log(`➕ Agregando opción: ${tarea.nombre_tarea} (nivel ${nivel})`);
+
+            const option = document.createElement('option');
+            option.value = tarea.id_tarea;
+            option.innerHTML = (nivel > 0 ? indentacion : '') + iconos[Math.min(nivel, 2)] + ' ' + tarea.nombre_tarea;
+
+            const estilos = [
+                { fontWeight: 'bold', color: '#1e40af' },
+                { color: '#6b7280', paddingLeft: '10px' },
+                { color: '#9ca3af', paddingLeft: (10 + nivel * 5) + 'px' }
+            ];
+            Object.assign(option.style, estilos[Math.min(nivel, 2)]);
+
+            select.appendChild(option);
+
+            // Renderizar hijos recursivamente
+            if (tarea.hijos?.length > 0) {
+                console.log(`🔄 Renderizando ${tarea.hijos.length} hijos de ${tarea.nombre_tarea}`);
+                this.renderizarOpcionesTareasJerarquicas(tarea.hijos, select, tareaEditandoId, nivel + 1);
+            }
+        });
+    }
+
+    esDescendiente(tareaRaiz, idBuscado) {
+        if (!tareaRaiz.hijos?.length) return false;
+
+        for (let hijo of tareaRaiz.hijos) {
+            if (hijo.id_tarea === idBuscado || this.esDescendiente(hijo, idBuscado)) return true;
+        }
+        return false;
+    }
+
+    // Verifica si "tarea" es descendiente del ID indicado (sube por la cadena de padres)
+    esDescendienteDe(tarea, idAncestroBuscado) {
+        if (!idAncestroBuscado || !tarea) return false;
+
+        let actual = tarea;
+        const ancestro = String(idAncestroBuscado);
+
+        while (actual && actual.id_tarea_padre) {
+            if (String(actual.id_tarea_padre) === ancestro) return true;
+            actual = this.tareasActuales?.find(t => String(t.id_tarea) === String(actual.id_tarea_padre));
+        }
+
+        return false;
+    }
+
+    esDescendienteOSiMisma(tareaActual, idPadrePropuesto) {
+        // Verificar si es la misma tarea
+        if (tareaActual.id_tarea === idPadrePropuesto) return true;
+
+        // Verificar si el padre propuesto es descendiente de la tarea actual
+        const construirMapaDescendientes = (idTarea, mapa = new Set()) => {
+            mapa.add(idTarea);
+            const hijos = this.tareasActuales.filter(t => t.id_tarea_padre === idTarea);
+            hijos.forEach(hijo => construirMapaDescendientes(hijo.id_tarea, mapa));
+            return mapa;
+        };
+
+        const descendientes = construirMapaDescendientes(tareaActual.id_tarea);
+        return descendientes.has(idPadrePropuesto);
+    }
+
+    onTipoTareaChange() {
+        const tipo = document.getElementById('tareaTipo').value;
+        const contenedorPadre = document.getElementById('contenedorTareaPadre');
+
+        if (tipo === 'subtarea') {
+            contenedorPadre.classList.remove('hidden');
+            this.cargarTareasPrincipalesEnSelector();
+        } else {
+            contenedorPadre.classList.add('hidden');
+            document.getElementById('tareaPadre').value = '';
+        }
+    }
+
+    /**
+     * Devuelve la jerarquía de una tarea como string tipo "1.2.1" (posición en el árbol)
+     */
+    getJerarquiaTarea(idTarea) {
+        // Construir la cadena de índices desde la tarea hasta la raíz
+        let tarea = this.tareasActuales?.find(t => t.id_tarea === idTarea);
+        if (!tarea) return '';
+        const indices = [];
+        while (tarea) {
+            // Buscar el índice de la tarea respecto a sus hermanos
+            let hermanos = [];
+            if (tarea.id_tarea_padre) {
+                hermanos = this.tareasActuales.filter(t => t.id_tarea_padre === tarea.id_tarea_padre);
+            } else {
+                hermanos = this.tareasActuales.filter(t => !t.id_tarea_padre || t.es_tarea_principal == 1);
+            }
+            const idx = hermanos.findIndex(t => t.id_tarea === tarea.id_tarea);
+            indices.unshift(idx + 1); // +1 para numeración humana
+            // Subir al padre
+            tarea = tarea.id_tarea_padre ? this.tareasActuales.find(t => t.id_tarea === tarea.id_tarea_padre) : null;
+        }
+        return indices.join('.');
+    }
+
+    editarTarea(idTarea) {
+        const tarea = this.tareasActuales?.find(t => t.id_tarea === idTarea);
+        if (!tarea) return;
+
+        const campos = {
+            modalTareaTitle: 'Editar Tarea',
+            tareaId: tarea.id_tarea,
+            tareaIdObjetivo: tarea.id_objetivo,
+            tareaNombre: tarea.nombre_tarea || '',
+            tareaFechaInicio: tarea.fecha_inicio || '',
+            tareaFechaFin: tarea.fecha_fin || '',
+            tareaDuracion: tarea.duracion_dias || 0,
+            tareaRecursos: tarea.nombres_recursos || '',
+            tareaEstado: tarea.estado_completado_pendiente || 'Pendiente',
+            tareaPredesesoras: tarea.predesesoras || '', 
+            tareaPresupuesto: tarea.presupuesto || 0
+        };
+
+        // Asignar valores correctamente
+        Object.entries(campos).forEach(([id, valor]) => {
+            const elem = document.getElementById(id);
+            if (elem) {
+                if (id === 'modalTareaTitle') {
+                    elem.textContent = valor;
+                } else {
+                    elem.value = valor;
+                }
+            }
+        });
+
+        // Mostrar fechas anteriores (readonly)
+        const contenedorFechasAnteriores = document.getElementById('contenedorFechasAnteriores');
+        if (contenedorFechasAnteriores) {
+            contenedorFechasAnteriores.classList.remove('hidden');
+            
+            // Asignar fechas anteriores
+            const fechaInicioAnterior = document.getElementById('tareaFechaInicioAnterior');
+            const fechaFinAnterior = document.getElementById('tareaFechaFinAnterior');
+            
+            if (fechaInicioAnterior) fechaInicioAnterior.value = tarea.fecha_inicio || '';
+            if (fechaFinAnterior) fechaFinAnterior.value = tarea.fecha_fin || '';
+        }
+
+        // Configurar tipo de tarea
+        const tareaTipoElem = document.getElementById('tareaTipo');
+        console.log('🔧 Configurando tipo de tarea. es_tarea_principal:', tarea.es_tarea_principal);
+
+        // Mostrar jerarquía en consola
+        const jerarquia = this.getJerarquiaTarea(idTarea);
+        console.log('📊 Jerarquía de la tarea:', jerarquia);
+
+        if (tarea.es_tarea_principal == 1) {
+            tareaTipoElem.value = 'principal';
+            document.getElementById('contenedorTareaPadre').classList.add('hidden');
+            console.log('✅ Configurada como tarea principal');
+        } else {
+            tareaTipoElem.value = 'subtarea';
+            document.getElementById('contenedorTareaPadre').classList.remove('hidden');
+            console.log('✅ Configurada como subtarea, id_tarea_padre:', tarea.id_tarea_padre);
+
+            // Cargar selector de tareas padre
+            console.log('🔄 Cargando opciones de tareas padre...');
+            this.cargarTareasPrincipalesEnSelector();
+
+            // Asignar tarea padre con más tiempo de espera
+            if (tarea.id_tarea_padre) {
+                console.log('⏱️ Esperando 200ms para asignar tarea padre:', tarea.id_tarea_padre);
+                setTimeout(() => {
+                    const tareaPadreElem = document.getElementById('tareaPadre');
+                    if (tareaPadreElem) {
+                        console.log('🔧 Elemento tareaPadre encontrado');
+                        console.log('🔧 Tarea padre a asignar:', tarea.id_tarea_padre);
+                        console.log('🔧 Opciones disponibles:', Array.from(tareaPadreElem.options).map(o => ({
+                            value: o.value,
+                            text: o.textContent
+                        })));
+
+                        // Convertir a string para comparación
+                        const idPadreString = String(tarea.id_tarea_padre);
+                        tareaPadreElem.value = idPadreString;
+
+                        console.log('🔧 Valor asignado:', tareaPadreElem.value);
+                        console.log('� ¿Asignación exitosa?:', tareaPadreElem.value === idPadreString);
+
+                        if (tareaPadreElem.value !== idPadreString) {
+                            console.error('❌ No se pudo asignar la tarea padre. Opción no encontrada en el select');
+                        }
+                    } else {
+                        console.error('❌ No se encontró el elemento tareaPadre después del timeout');
+                    }
+                }, 200); // Aumentado de 150 a 200ms
+            } else {
+                console.log('ℹ️ No hay tarea padre asignada');
+            }
+        }
+
+        this.toggleModal('modalTarea', true);
+    }
+
+
+    calcularDuracion() {
+        const inicio = document.getElementById('tareaFechaInicio').value;
+        const fin = document.getElementById('tareaFechaFin').value;
+
+        if (inicio && fin) {
+            const diffDays = Math.ceil((new Date(fin) - new Date(inicio)) / (1000 * 60 * 60 * 24));
+            document.getElementById('tareaDuracion').value = diffDays || 1;
+        }
+    }
+
+    async guardarTarea() {
+        try {
+            const tipoTarea = document.getElementById('tareaTipo').value;
+            const idTareaPadre = tipoTarea === 'subtarea' ? document.getElementById('tareaPadre').value : null;
+            const idTarea = document.getElementById('tareaId').value;
+
+            console.log('🔍 Datos a guardar:', {
+                idTarea: idTarea,
+                esActualizacion: !!idTarea,
+                tipoTarea: tipoTarea,
+                idTareaPadre: idTareaPadre
+            });
+
+            const datosBase = {
+                nombre_tarea: document.getElementById('tareaNombre').value,
+                fecha_inicio: document.getElementById('tareaFechaInicio').value,
+                fecha_fin: document.getElementById('tareaFechaFin').value,
+                duracion_dias: parseInt(document.getElementById('tareaDuracion').value) || 1,
+                nombres_recursos: document.getElementById('tareaRecursos').value,
+                predesesoras: document.getElementById('tareaPredesesoras')?.value || null,
+                estado_completado_pendiente: document.getElementById('tareaEstado').value,
+                es_tarea_principal: tipoTarea === 'principal' ? 1 : 0,
+                id_tarea_padre: idTareaPadre,
+                presupuesto: parseFloat(document.getElementById('tareaPresupuesto').value) || 0,
+            };
+
+            if (idTarea) {
+                // ✅ ACTUALIZAR SOLO LA TAREA EXISTENTE
+                await this.service.updateSubproceso({
+                    ...datosBase,
+                    id_tarea: idTarea,
+                    id_objetivo: this.objetivoActual.id
+                });
+                window.SwalHelpers.showSuccess('Tarea actualizada correctamente');
+            } else {
+                // ✅ CREAR SOLO UNA TAREA (asignada al primer registro del piloto)
+                // Todas las filas del mismo piloto compartirán esta tarea al cargar por piloto
+                const registrosPiloto = this.datos.filter(d => d.piloto === this.objetivoActual.piloto);
+                if (registrosPiloto.length > 0) {
+                    await this.service.createSubproceso({
+                        ...datosBase,
+                        id_objetivo: registrosPiloto[0].id
+                    });
+                }
+                window.SwalHelpers.showSuccess('Tarea creada correctamente');
+            }
+
+            this.cerrarModalTarea();
+            if (this.objetivoActual?.piloto) {
+                await this.cargarTareasPorPiloto(this.objetivoActual.piloto);
+            }
+            await this.cargarDatos();
+        } catch (error) {
+            console.error('❌ Error al guardar tarea:', error);
+            window.SwalHelpers.showError('Error al guardar tarea: ' + error.message);
+        }
+    }
+
+
+    async eliminarTarea(idTarea) {
+        console.log('🤔 Solicitando confirmación para eliminar tarea:', idTarea);
+        
+        const confirmado = await window.SwalHelpers.showConfirm(
+            this.config.MENSAJES.CONFIRMACION.ELIMINAR_TAREA,
+            'Esta acción no se puede deshacer'
+        );
+        
+        console.log('✅ Resultado de confirmación tarea:', confirmado);
+        
+        if (!confirmado) {
+            console.log('❌ Eliminación de tarea cancelada por el usuario');
+            return;
+        }
+
+        console.log('🗑️ Procediendo con eliminación de tarea...');
+
+        try {
+            // 1. Buscar la tarea que se va a eliminar
+            const tareaEliminar = this.tareasActuales.find(t => t.id_tarea === idTarea);
+            
+            if (tareaEliminar) {
+                // 2. Buscar todas las subtareas que tienen esta tarea como padre
+                const subtareas = this.tareasActuales.filter(t => t.id_tarea_padre === idTarea);
+                
+                console.log(`🗑️ Eliminando tarea ${idTarea}, subtareas encontradas:`, subtareas.length);
+                
+                // 3. Si tiene subtareas, reasignarlas al padre de la tarea eliminada (o null si era principal)
+                if (subtareas.length > 0) {
+                    const nuevoPadre = tareaEliminar.id_tarea_padre || null;
+                    console.log(`🔄 Reasignando ${subtareas.length} subtareas al padre:`, nuevoPadre || 'Ninguno (serán principales)');
+                    
+                    // 4. Actualizar cada subtarea
+                    for (const subtarea of subtareas) {
+                        await this.service.updateSubproceso({
+                            id_tarea: subtarea.id_tarea,
+                            id_objetivo: subtarea.id_objetivo,
+                            nombre_tarea: subtarea.nombre_tarea,
+                            fecha_inicio: subtarea.fecha_inicio,
+                            fecha_fin: subtarea.fecha_fin,
+                            duracion_dias: subtarea.duracion_dias,
+                            nombres_recursos: subtarea.nombres_recursos,
+                            estado_completado_pendiente: subtarea.estado_completado_pendiente,
+                            es_tarea_principal: nuevoPadre ? 0 : 1, // Si no hay padre, se convierte en principal
+                            id_tarea_padre: nuevoPadre,
+                            presupuesto: subtarea.presupuesto || 0
+                        });
+                        console.log(`✅ Subtarea ${subtarea.id_tarea} reasignada`);
+                    }
+                }
+            }
+            
+            // 5. Ahora sí eliminar la tarea
+            await this.service.deleteSubproceso(idTarea);
+            window.SwalHelpers.showSuccess(this.config.MENSAJES.EXITO.TAREA_ELIMINADA);
+            
+            // 6. Recargar las tareas
+            if (this.objetivoActual?.id) await this.cargarTareasPorRegistro(this.objetivoActual.id);
+            await this.cargarDatos();
+        } catch (error) {
+            console.error('Error al eliminar tarea:', error);
+            window.SwalHelpers.showError('Error al eliminar la tarea');
+        }
+    }
+
+    exportarExcel() {
+        const headers = ['Piloto', 'Granja', 'Galpón', 'Objetivo', 'Meta', 'Inicio', 'Fin', 'Estado'];
+        let csv = headers.join(',') + '\n';
+
+        this.datos.forEach(d => {
+            csv += [d.piloto, d.granja, d.galpon, d.objetivo, d.meta, d.inicio, d.fin, d.estado]
+                .map(cell => `"${cell || ''}"`)
+                .join(',') + '\n';
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'control_objetivos.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        this.mostrarNotificacion('Archivo exportado correctamente', 'success');
+    }
+
+
+
+
+    poblarSelectGranjas(selectElement) {
+        if (!selectElement || !this.granjasDisponibles?.length) return;
+
+        selectElement.innerHTML = '<option value="">-- Seleccione granja --</option>';
+
+        this.granjasDisponibles.forEach(granja => {
+            const option = document.createElement('option');
+            option.value = granja.codigo;
+            option.textContent = `${granja.codigo} - ${granja.nombre}`;
+            option.dataset.nombre = granja.nombre;
+            selectElement.appendChild(option);
+        });
+    }
+
+    async cargarGalponesParaSelect(granjaSelect) {
+        const codigoGranja = granjaSelect.value;
+        const galponSelect = granjaSelect.closest('.granja-galpon-item').querySelector('.galpon-select');
+
+        if (!codigoGranja) {
+            galponSelect.innerHTML = '<option value="">-- Seleccione granja primero --</option>';
+            return;
+        }
+
+        try {
+            galponSelect.innerHTML = '<option value="">Cargando...</option>';
+
+            const response = await fetch(`${this.config.API.BASE_URL}/api.php/galpones/${codigoGranja}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const galpones = await response.json();
+            galponSelect.innerHTML = '<option value="">-- Seleccione galpón --</option>';
+
+            galpones.forEach(galpon => {
+                const option = document.createElement('option');
+                option.value = galpon.tcodint;
+                option.textContent = `${galpon.tcodint} - ${galpon.tnomcen}`;
+                option.dataset.nombre = galpon.tnomcen;
+                galponSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando galpones:', error);
+            galponSelect.innerHTML = '<option value="">Error cargando galpones</option>';
+            this.mostrarNotificacion('Error al cargar galpones', 'error');
+        }
+    }
+
+    // Utilidades
+    getEstadoClass(estado) {
+        const estados = {
+            'Completado': 'estado-completado',
+            'En Proceso': 'estado-proceso'
+        };
+        return estados[estado] || 'estado-pendiente';
+    }
+
+    truncate(text, length) {
+        if (!text) return '-';
+        return text.length > length ? text.substring(0, length) + '...' : text;
+    }
+
+    formatDate(dateStr) {
+        if (!dateStr) return '-';
+        return new Date(dateStr).toLocaleDateString('es-PE');
+    }
+
+    toggleModal(modalId, show) {
+        const modal = document.getElementById(modalId);
+        modal.classList.toggle('hidden', !show);
+        modal.classList.toggle('flex', show);
+    }
+
+    cerrarModal() { this.toggleModal('modalObjetivo', false); }
+    cerrarModalSubprocesos() { this.toggleModal('modalSubprocesos', false); }
+    cerrarModalTarea() { this.toggleModal('modalTarea', false); }
+
+    mostrarCargando(mostrar) {
+        const loading = document.getElementById('loadingTable');
+        const tabla = document.getElementById('tablaObjetivos');
+        const emptyState = document.getElementById('emptyState');
+
+        if (loading && tabla) {
+            loading.classList.toggle('hidden', !mostrar);
+            tabla.classList.toggle('hidden', mostrar);
+            if (emptyState) emptyState.classList.add('hidden');
+        }
+    }
+
+    mostrarNotificacion(mensaje, tipo = 'success') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+
+        if (!toast || !toastMessage || !toastIcon) return;
+
+        const config = {
+            success: { bg: 'bg-green-500', icon: 'fa-check-circle' },
+            error: { bg: 'bg-red-500', icon: 'fa-exclamation-circle' },
+            warning: { bg: 'bg-yellow-500', icon: 'fa-exclamation-triangle' },
+            info: { bg: 'bg-blue-500', icon: 'fa-info-circle' }
+        };
+
+        const { bg, icon } = config[tipo] || config.success;
+
+        // Limpiar clases anteriores
+        toast.className = `fixed bottom-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg transform transition-transform duration-300 z-50 ${bg}`;
+        toastIcon.className = `fas ${icon}`;
+        toastMessage.textContent = mensaje;
+
+        // Mostrar
+        toast.classList.remove('hidden');
+        toast.style.transform = 'translateY(0)';
+
+        // Ocultar después de 3 segundos
+        setTimeout(() => {
+            toast.style.transform = 'translateY(100px)';
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 300);
+        }, 3000);
+    }
+
+    // ==================== GRANJAS Y GALPONES ====================
+    async cargarGranjas() {
+        try {
+            console.log('🔍 Iniciando carga de granjas...');
+            console.log('🔗 URL:', `${this.config.API.BASE_URL}/routers/api.php/granjas`);
+            
+            const response = await fetch(`${this.config.API.BASE_URL}/routers/api.php/granjas`);
+            console.log('📡 Response status:', response.status);
+            console.log('📡 Response ok:', response.ok);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('📦 Datos recibidos:', data);
+            console.log('📦 Tipo de datos:', typeof data, Array.isArray(data));
+            
+            this.granjasDisponibles = data;
+            console.log('✅ Granjas cargadas:', this.granjasDisponibles.length);
+            console.log('✅ Primera granja:', this.granjasDisponibles[0]);
+
+            // ⬅️ YA NO POBLAR AQUÍ, se poblará cuando se abra el modal
+
+        } catch (error) {
+            console.error('❌ Error cargando granjas:', error);
+            console.error('❌ Error message:', error.message);
+            console.error('❌ Error stack:', error.stack);
+            window.SwalHelpers.showError('Error al cargar las granjas');
+        }
+    }
+
+    async cargarGalponesParaSelect(granjaSelect) {
+        const codigoGranja = granjaSelect.value;
+        const galponSelect = granjaSelect.closest('.granja-galpon-item').querySelector('.galpon-select');
+
+        if (!codigoGranja) {
+            galponSelect.innerHTML = '<option value="">-- Seleccione granja primero --</option>';
+            return;
+        }
+
+        try {
+            galponSelect.innerHTML = '<option value="">Cargando...</option>';
+
+            const response = await fetch(`${this.config.API.BASE_URL}/api.php/galpones/${codigoGranja}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const galpones = await response.json();
+            console.log('✅ Galpones cargados para granja', codigoGranja, ':', galpones.length);
+
+            galponSelect.innerHTML = '<option value="">-- Seleccione galpón --</option>';
+
+            galpones.forEach(galpon => {
+                const option = document.createElement('option');
+                option.value = galpon.tcodint;
+                option.textContent = `${galpon.tcodint} - ${galpon.tnomcen}`;
+                option.dataset.nombre = galpon.tnomcen;
+                galponSelect.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('❌ Error cargando galpones:', error);
+            galponSelect.innerHTML = '<option value="">Error cargando galpones</option>';
+            this.mostrarNotificacion('Error al cargar galpones', 'error');
+        }
+    }
+
+    
+// Método para gestionar objetivos dinámicos
+setupDynamicObjetivos() {
+    // Agregar objetivo
+    document.getElementById('btnAgregarObjetivo')?.addEventListener('click', () => {
+        const listaObjetivos = document.getElementById('listaObjetivos');
+        const nuevoObjetivo = document.createElement('div');
+        nuevoObjetivo.className = 'objetivo-item flex gap-2';
+        nuevoObjetivo.innerHTML = `
+            <textarea rows="2" placeholder="Describe el objetivo..." 
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 objetivo-text"></textarea>
+            <button type="button" class="btn-eliminar-objetivo text-red-600 hover:text-red-800 px-2">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        listaObjetivos.appendChild(nuevoObjetivo);
+        this.actualizarBotonesEliminar();
+    });
+
+    // Agregar meta
+    document.getElementById('btnAgregarMeta')?.addEventListener('click', () => {
+        const listaMetas = document.getElementById('listaMetas');
+        const nuevaMeta = document.createElement('div');
+        nuevaMeta.className = 'meta-item flex gap-2';
+        nuevaMeta.innerHTML = `
+            <textarea rows="2" placeholder="Describe la meta..." 
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 meta-text"></textarea>
+            <button type="button" class="btn-eliminar-meta text-red-600 hover:text-red-800 px-2">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        listaMetas.appendChild(nuevaMeta);
+        this.actualizarBotonesEliminar();
+    });
+
+    // Eliminar objetivos
+    document.getElementById('listaObjetivos')?.addEventListener('click', (e) => {
+        const btnEliminar = e.target.closest('.btn-eliminar-objetivo');
+        if (btnEliminar) {
+            const item = btnEliminar.closest('.objetivo-item');
+            if (document.querySelectorAll('.objetivo-item').length > 1) {
+                item.remove();
+                this.actualizarBotonesEliminar();
+            } else {
+                window.SwalHelpers.showWarning('Debe haber al menos un objetivo');
+            }
+        }
+    });
+
+    // Eliminar metas
+    document.getElementById('listaMetas')?.addEventListener('click', (e) => {
+        const btnEliminar = e.target.closest('.btn-eliminar-meta');
+        if (btnEliminar) {
+            const item = btnEliminar.closest('.meta-item');
+            if (document.querySelectorAll('.meta-item').length > 1) {
+                item.remove();
+                this.actualizarBotonesEliminar();
+            } else {
+                window.SwalHelpers.showWarning('Debe haber al menos una meta');
+            }
+        }
+    });
+}
+
+// Método para actualizar botones de eliminar
+actualizarBotonesEliminar() {
+    const objetivos = document.querySelectorAll('.objetivo-item');
+    objetivos.forEach(item => {
+        const btn = item.querySelector('.btn-eliminar-objetivo');
+        if (btn) {
+            btn.style.display = objetivos.length > 1 ? 'block' : 'none';
+        }
+    });
+
+    const metas = document.querySelectorAll('.meta-item');
+    metas.forEach(item => {
+        const btn = item.querySelector('.btn-eliminar-meta');
+        if (btn) {
+            btn.style.display = metas.length > 1 ? 'block' : 'none';
+        }
+    });
+}
+}
+
