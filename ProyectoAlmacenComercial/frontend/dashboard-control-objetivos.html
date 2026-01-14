@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Control de Objetivos</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/output.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="css/dashboard-styles.objetivos.css">
+
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div class="container mx-auto px-4 py-6">
+
+        <!-- Acciones -->
+        <section class="bg-white rounded-2xl card-shadow p-4 mb-4 slide-down">
+            <h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <i class="fas fa-tools text-purple-600"></i>
+                Acciones
+            </h2>
+            <div class="flex flex-wrap gap-3 items-center justify-between">
+                <div class="flex flex-wrap gap-3">
+                    <button id="btnNuevo"
+                        class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow btn-hover-scale">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nuevo Objetivo
+                    </button>
+                    <!--<button id="btnExportar"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow btn-hover-scale">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Exportar Excel
+                    </button>-->
+                </div>
+
+                <div class="dropdown-columns">
+                    <button id="btnToggleColumns"
+                        class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg shadow flex items-center gap-2">
+                        <i class="fas fa-columns"></i>
+                        Columnas
+                        <i class="fas fa-chevron-down text-sm"></i>
+                    </button>
+
+                    <div id="columnDropdown" class="dropdown-content">
+                        <div class="dropdown-header">
+                            <span>Seleccionar Columnas</span>
+                        </div>
+                        <div class="p-2">
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="0" checked>
+                                <span>Piloto</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="1" checked>
+                                <span>Granja</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="2" checked>
+                                <span>Galpón</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="3" checked>
+                                <span>Objetivo</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="4" checked>
+                                <span>Meta</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="5" checked>
+                                <span>Inicio</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="6" checked>
+                                <span>Fin</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="7" checked>
+                                <span>Estado</span>
+                            </label>
+                            <label class="column-toggle">
+                                <input type="checkbox" class="column-checkbox" data-column="8" checked>
+                                <span>Progreso</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filtros -->
+        <section class="bg-white rounded-2xl card-shadow p-4 mb-4 slide-down">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-700 flex items-center gap-2">
+                    <i class="fas fa-filter text-indigo-600"></i>
+                    Filtros
+                </h2>
+                <button id="btnToggleFiltros" class="text-gray-500 hover:text-indigo-600 transition p-2 rounded-lg">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <button id="btnLimpiarFiltros" class="text-indigo-600 hover:text-indigo-700 font-semibold">
+                    <i class="fas fa-times-circle mr-1"></i>
+                    Limpiar filtros
+                </button>
+            </div>
+
+
+            <div id="filterContent">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
+                        <input type="date" id="filterFechaInicio"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin</label>
+                        <input type="date" id="filterFechaFin"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Granja</label>
+                        <select id="filterGranja"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                        <select id="filterEstado"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Todos</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="En Proceso">En Proceso</option>
+                            <option value="Completado">Completado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-3 mt-4">
+                    <button id="btnAplicarFiltros"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg">
+                        <i class="fas fa-search mr-2"></i>
+                        Aplicar Filtros
+                    </button>
+                    <!--<button id="btnLimpiarFiltros"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg">
+                        <i class="fas fa-eraser mr-2"></i>
+                        Limpiar
+                    </button>-->
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabla -->
+        <section class="bg-white rounded-2xl card-shadow p-4 slide-down">
+            <!--<h2 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <i class="fas fa-table text-blue-600"></i>
+                Control de Objetivos
+                <span id="totalRegistros" class="text-sm font-normal text-gray-500 ml-2"></span>
+            </h2>-->
+
+            <div class="overflow-x-auto">
+                <table id="tablaObjetivos" class="w-full text-sm">
+                    <thead class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                        <tr>
+                            <th class="px-4 py-3 text-left rounded-tl-lg">Piloto</th>
+                            <th class="px-4 py-3 text-left">Granja</th>
+                            <th class="px-4 py-3 text-left">Galpón</th>
+                            <th class="px-4 py-3 text-left">Objetivo</th>
+                            <th class="px-4 py-3 text-left">Meta</th>
+                            <th class="px-4 py-3 text-left">Inicio</th>
+                            <th class="px-4 py-3 text-left">Fin</th>
+                            <th class="px-4 py-3 text-left">Contrato</th>
+                            <th class="px-4 py-3 text-center">Estado</th>
+                            <th class="px-4 py-3 text-center">Progreso</th>
+                            <th class="px-4 py-3 text-center rounded-tr-lg">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyObjetivos" class="divide-y divide-gray-200">
+                        <!-- Datos dinámicos -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="loadingTable" class="text-center py-8 hidden">
+                <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
+                <p class="text-gray-500 mt-2">Cargando datos...</p>
+            </div>
+
+            <div id="emptyState" class="text-center py-8 hidden">
+                <i class="fas fa-inbox text-4xl text-gray-400"></i>
+                <p class="text-gray-500 mt-2">No hay registros para mostrar</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Objetivo -->
+    <div id="modalObjetivo" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+            <!-- Header fijo -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-2xl flex-shrink-0">
+                <h3 id="modalTitle" class="text-xl font-bold">Nuevo Objetivo</h3>
+            </div>
+
+            <!-- Contenido con scroll -->
+            <div class="overflow-y-auto flex-1 p-6 custom-scrollbar" style="max-height: calc(100vh - 12rem);">
+                <form id="formObjetivo">
+                    <input type="hidden" id="modalId">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Piloto *</label>
+                            <input type="text" id="modalPiloto" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <!--<div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Granja *</label>
+                        <input type="text" id="modalGranja" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Galpón</label>
+                        <input type="text" id="modalGalpon"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>-->
+
+                        <!-- Lista de Granjas-Galpones con scroll -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Granjas y Galpones *</label>
+                                <button type="button" id="btnAgregarGranjaGalpon"
+                                    class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Agregar Granja-Galpón
+                                </button>
+                            </div>
+                            <div id="listaGranjasGalpones"
+                                class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- ⬅️ DEBE TENER ESTE ID -->
+                                <div class="granja-galpon-item flex gap-2">
+                                    <select
+                                        class="granja-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                                        required>
+                                        <option value="">-- Seleccione granja --</option>
+                                    </select>
+                                    <select
+                                        class="galpon-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                                        <option value="">-- Seleccione granja primero --</option>
+                                    </select>
+                                    <button type="button"
+                                        class="btn-eliminar-granja-galpon text-red-600 hover:text-red-800 px-2"
+                                        style="display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="chipsGranjasGalpones" class="flex flex-wrap gap-2 mt-2"></div>
+                        </div>
+
+
+                        <!-- Lista de Objetivos con scroll -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Objetivos *</label>
+                                <button type="button" id="btnAgregarObjetivo"
+                                    class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Agregar Objetivo
+                                </button>
+                            </div>
+                            <div id="listaObjetivos" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- Objetivos dinámicos -->
+                                <div class="objetivo-item flex gap-2">
+                                    <textarea rows="2" placeholder="Describe el objetivo..."
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 objetivo-text"></textarea>
+                                    <button type="button"
+                                        class="btn-eliminar-objetivo text-red-600 hover:text-red-800 px-2"
+                                        style="display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Metas con scroll -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Metas *</label>
+                                <button type="button" id="btnAgregarMeta"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Agregar Meta
+                                </button>
+                            </div>
+                            <div id="listaMetas" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- Metas dinámicas -->
+                                <div class="meta-item flex gap-2">
+                                    <textarea rows="2" placeholder="Describe la meta..."
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 meta-text"></textarea>
+                                    <button type="button" class="btn-eliminar-meta text-red-600 hover:text-red-800 px-2"
+                                        style="display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
+                            <input type="date" id="modalInicio" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin *</label>
+                            <input type="date" id="modalFin" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <!-- Campos decorativos: Contrato y Adjuntar archivo -->
+
+                        <div>
+                            <label for="objetivo-contrato"
+                                class="block text-sm font-medium text-gray-700 mb-1">Contrato</label>
+                            <input type="text"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                id="objetivo-contrato" name="contrato" placeholder="N° o código de contrato">
+                        </div>
+                        <div>
+                            <label for="objetivo-adjunto" class="block text-sm font-medium text-gray-700 mb-1">Adjuntar
+                                documento</label>
+
+                                <!--cargar multiples archivos-->
+                                <!--<input type="file" multiple-->
+                            <input type="file"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                id="objetivo-adjunto" name="adjunto"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg">
+
+                            <!-- Vista decorativa de archivos seleccionados -->
+                            <div id="fileListDecorativo" class="mt-3 space-y-2"></div>
+                            <p class="text-xs text-gray-500 mt-1">(Máx. 10 MB por archivo)</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="modalEstado"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En Proceso">En Proceso</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer fijo -->
+            <div class="flex justify-end gap-3 p-4 border-t bg-gray-50 rounded-b-2xl flex-shrink-0">
+                <button type="button" id="btnCancelar"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg">
+                    Cancelar
+                </button>
+                <button type="submit" id="btnGuardar" form="formObjetivo"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Subprocesos -->
+    <div id="modalSubprocesos" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="bg-blue-600 text-white p-4 rounded-t-2xl flex justify-between items-center">
+                <h3 id="modalSubTitle" class="text-xl font-bold">Tareas del Objetivo</h3>
+                <button id="btnCerrarSubprocesos" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <div class="mb-4 flex justify-between items-center">
+                    <p id="subprocesosInfo" class="text-gray-600"></p>
+                    <button id="btnNuevaTarea"
+                        class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nueva Tarea
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Tarea</th>
+                                <th class="px-3 py-2 text-center">Días</th>
+                                <th class="px-3 py-2 text-left">Inicio</th>
+                                <th class="px-3 py-2 text-left">Fin</th>
+                                <th class="px-3 py-2 text-left">Predecesoras</th>
+                                <th class="px-3 py-2 text-left">Recursos</th>
+                                <th class="px-3 py-2 text-right">Presupuesto</th>
+                                <th class="px-3 py-2 text-center">Estado</th>
+                                <th class="px-3 py-2 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodySubprocesos" class="divide-y">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva/Editar Tarea -->
+    <div id="modalTarea" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+        style="z-index: 2000;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
+            <div class="bg-blue-600 text-white p-3 rounded-t-2xl flex justify-between items-center">
+                <h3 id="modalTareaTitle" class="text-lg font-bold">Nueva Tarea</h3>
+                <button type="button" id="btnCerrarTarea" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <form id="formTarea" class="p-4">
+                <input type="hidden" id="tareaId">
+                <input type="hidden" id="tareaIdObjetivo">
+
+                <div class="space-y-3">
+                    <!-- Selector de tipo de tarea -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Tarea *</label>
+                        <select id="tareaTipo" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="principal">Tarea Principal</option>
+                            <option value="subtarea">Sub-tarea</option>
+                        </select>
+                    </div>
+                    <!-- Selector de tarea padre (solo visible para subtareas) -->
+                    <div id="contenedorTareaPadre" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <!--Tarea Padre (puede ser principal o subtarea) *
+                            <span class="text-xs text-gray-500 font-normal block mt-1">
+                                <i class="fas fa-info-circle"></i> Puedes crear niveles ilimitados de subtareas
+                            </span>-->
+                        </label>
+                        <select id="tareaPadre"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="">-- Seleccione tarea padre --</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Tarea *</label>
+                        <input type="text" id="tareaNombre" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
+                            <input type="date" id="tareaFechaInicio" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin *</label>
+                            <input type="date" id="tareaFechaFin" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Predecesoras
+                            <span
+                                class="text-xs text-gray-500 font-normal"><!--(Tareas que deben completarse antes)--></span>
+                        </label>
+                        <input type="text" id="tareaPredesesoras" placeholder="Ej: 1, 2, 3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Duración (días)</label>
+                            <input type="number" id="tareaDuracion" min="0"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="tareaEstado"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En Proceso">En Proceso</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Recursos Asignados</label>
+                            <input type="text" id="tareaRecursos" placeholder="Ej: Comedor, Todos, etc."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Presupuesto (S/)</label>
+                            <input type="number" id="tareaPresupuesto" step="0.01" min="0" placeholder="0.00"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-4 pt-3 border-t">
+                    <button type="button" id="btnCancelarTarea"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg text-sm">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar Tarea
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Notificación Toast -->
+    <div id="toast"
+        class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transform transition-transform duration-300 z-50">
+        <div class="flex items-center gap-2">
+            <i id="toastIcon" class="fas fa-check-circle"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- Scripts con rutas relativas -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/utils/swal-helpers.js"></script>
+    <script src="js/config/control-objetivos.config.js"></script>
+    <script src="js/services/control-objetivos.service.js"></script>
+    <script src="js/services/objetivo-archivos.service.js"></script>
+    <script src="js/services/auth.service.js"></script>
+    <script src="js/utils/permisos.js"></script>
+    <script src="js/controllers/control-objetivos.controller.backup.js?v=20260104"></script>
+
+    <script>
+        // Declarar controller en scope global para que los onclick funcionen
+        let controller;
+
+        // Gestión de objetivos y metas dinámicos
+        document.addEventListener('DOMContentLoaded', async function () {
+            // ✅ INICIALIZAR SISTEMA DE PERMISOS PRIMERO
+            PermisosManager.init();
+            
+            // Inicializar controlador DENTRO de DOMContentLoaded
+            controller = new ControlObjetivosController();
+            await controller.init();
+
+            // Agregar objetivo
+            document.getElementById('btnAgregarObjetivo').addEventListener('click', function () {
+                const listaObjetivos = document.getElementById('listaObjetivos');
+                const nuevoObjetivo = document.createElement('div');
+                nuevoObjetivo.className = 'objetivo-item flex gap-2';
+                nuevoObjetivo.innerHTML = `
+                <textarea rows="2" placeholder="Describe el objetivo..." 
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 objetivo-text"></textarea>
+                <button type="button" class="btn-eliminar-objetivo text-red-600 hover:text-red-800 px-2">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+                listaObjetivos.appendChild(nuevoObjetivo);
+                actualizarBotonesEliminar();
+            });
+
+            // Agregar meta
+            document.getElementById('btnAgregarMeta').addEventListener('click', function () {
+                const listaMetas = document.getElementById('listaMetas');
+                const nuevaMeta = document.createElement('div');
+                nuevaMeta.className = 'meta-item flex gap-2';
+                nuevaMeta.innerHTML = `
+                <textarea rows="2" placeholder="Describe la meta..." 
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 meta-text"></textarea>
+                <button type="button" class="btn-eliminar-meta text-red-600 hover:text-red-800 px-2">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+                listaMetas.appendChild(nuevaMeta);
+                actualizarBotonesEliminar();
+            });
+
+            // ============GESTIÓN DE GRANJAS-GALPONES ============
+
+            // Agregar granja-galpón
+            document.getElementById('btnAgregarGranjaGalpon').addEventListener('click', function () {
+                const lista = document.getElementById('listaGranjasGalpones');
+                const nuevoItem = document.createElement('div');
+                nuevoItem.className = 'granja-galpon-item flex gap-2';
+                nuevoItem.innerHTML = `
+        <select class="granja-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+            <option value="">-- Seleccione granja --</option>
+        </select>
+        <select class="galpon-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+            <option value="">-- Seleccione granja primero --</option>
+        </select>
+        <button type="button" class="btn-eliminar-granja-galpon text-red-600 hover:text-red-800 px-2">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+                lista.appendChild(nuevoItem);
+
+                // ✅ ESPERAR un momento para poblar el select
+                setTimeout(() => {
+                    const selectGranja = nuevoItem.querySelector('.granja-select');
+                    if (controller && controller.poblarSelectGranjas) {
+                        controller.poblarSelectGranjas(selectGranja);
+                    }
+                    renderChipsGranjas();
+                }, 50);
+
+                actualizarBotonesEliminar();
+            });
+
+
+            // Eliminar granja-galpón
+            document.getElementById('listaGranjasGalpones').addEventListener('click', function (e) {
+                const btnEliminar = e.target.closest('.btn-eliminar-granja-galpon');
+                if (btnEliminar) {
+                    const items = document.querySelectorAll('.granja-galpon-item');
+                    if (items.length > 1) {
+                        btnEliminar.closest('.granja-galpon-item').remove();
+                        actualizarBotonesEliminar();
+                        renderChipsGranjas();
+                    } else {
+                        alert('Debe haber al menos una granja-galpón');
+                    }
+                }
+            });
+
+            // Cambio de granja para cargar galpones
+            document.getElementById('listaGranjasGalpones').addEventListener('change', function (e) {
+                if (e.target.classList.contains('granja-select')) {
+                    if (controller && controller.cargarGalponesParaSelect) {
+                        controller.cargarGalponesParaSelect(e.target);
+                    }
+                    renderChipsGranjas();
+                }
+
+                if (e.target.classList.contains('galpon-select')) {
+                    renderChipsGranjas();
+                }
+            });
+
+            // ============ FIN DE GESTIÓN DE GRANJAS-GALPONES ============
+
+            // Eliminar objetivos
+            document.getElementById('listaObjetivos').addEventListener('click', function (e) {
+                const btnEliminar = e.target.closest('.btn-eliminar-objetivo');
+                if (btnEliminar) {
+                    const item = btnEliminar.closest('.objetivo-item');
+                    if (document.querySelectorAll('.objetivo-item').length > 1) {
+                        item.remove();
+                        actualizarBotonesEliminar();
+                    } else {
+                        alert('Debe haber al menos un objetivo');
+                    }
+                }
+            });
+
+            // Eliminar metas
+            document.getElementById('listaMetas').addEventListener('click', function (e) {
+                const btnEliminar = e.target.closest('.btn-eliminar-meta');
+                if (btnEliminar) {
+                    const item = btnEliminar.closest('.meta-item');
+                    if (document.querySelectorAll('.meta-item').length > 1) {
+                        item.remove();
+                        actualizarBotonesEliminar();
+                    } else {
+                        alert('Debe haber al menos una meta');
+                    }
+                }
+            });
+
+            function actualizarBotonesEliminar() {
+                // Objetivos
+                const objetivos = document.querySelectorAll('#listaObjetivos .objetivo-item');
+                objetivos.forEach((item) => {
+                    const btn = item.querySelector('.btn-eliminar-objetivo');
+                    if (btn) {
+                        btn.style.display = objetivos.length > 1 ? 'block' : 'none';
+                    }
+                });
+
+                // Metas
+                const metas = document.querySelectorAll('#listaMetas .meta-item');
+                metas.forEach((item) => {
+                    const btn = item.querySelector('.btn-eliminar-meta');
+                    if (btn) {
+                        btn.style.display = metas.length > 1 ? 'block' : 'none';
+                    }
+                });
+
+                // ⬇️ AGREGAR ESTO: Granjas-Galpones
+                const granjasGalpones = document.querySelectorAll('#listaGranjasGalpones .granja-galpon-item');
+                granjasGalpones.forEach((item) => {
+                    const btn = item.querySelector('.btn-eliminar-granja-galpon');
+                    if (btn) {
+                        btn.style.display = granjasGalpones.length > 1 ? 'block' : 'none';
+                    }
+                });
+            }
+
+            function renderChipsGranjas() {
+                const container = document.getElementById('chipsGranjasGalpones');
+                if (!container) return;
+
+                const items = document.querySelectorAll('#listaGranjasGalpones .granja-galpon-item');
+                container.innerHTML = '';
+
+                items.forEach((item, index) => {
+                    const granjaSelect = item.querySelector('.granja-select');
+                    const galponSelect = item.querySelector('.galpon-select');
+                    const granjaText = granjaSelect?.selectedOptions[0]?.text || '';
+                    const galponText = galponSelect?.selectedOptions[0]?.text || '';
+
+                    if (!granjaSelect?.value) return; // solo chips con granja elegida
+
+                    const chip = document.createElement('div');
+                    chip.className = 'flex items-center gap-2 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded-full px-3 py-1 text-xs font-semibold';
+                    chip.innerHTML = `
+                <span>${granjaText}${galponSelect?.value ? ' / ' + galponText : ''}</span>
+                <button type="button" aria-label="Quitar" class="text-red-500 hover:text-red-700 font-bold">×</button>
+            `;
+
+                    chip.querySelector('button').addEventListener('click', () => {
+                        const currentItems = document.querySelectorAll('#listaGranjasGalpones .granja-galpon-item');
+                        if (currentItems.length > 1) {
+                            item.remove();
+                        } else {
+                            // si es el único, limpiar selects en vez de eliminar
+                            granjaSelect.value = '';
+                            if (galponSelect) {
+                                galponSelect.innerHTML = '<option value="">-- Seleccione granja primero --</option>';
+                            }
+                        }
+                        actualizarBotonesEliminar();
+                        renderChipsGranjas();
+                    });
+
+                    container.appendChild(chip);
+                });
+            }
+
+
+            actualizarBotonesEliminar();
+            renderChipsGranjas();
+        });
+
+        // Función para cargar datos (llamada desde el index principal)
+        function cargarDatos(tipo) {
+            if (controller) {
+                controller.cargarDatos();
+            }
+        }
+    </script>
+
+</body>
+
+</html>
