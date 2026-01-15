@@ -5,19 +5,9 @@ class TaskController {
 
     async abrir(piloto, idObjetivo) {
         const idBuscado = String(idObjetivo);
-        this.main.objetivoActual = this.main.datos.find(d => String(d.id) === idBuscado);
         
-        if (!this.main.objetivoActual) {
-            this.main.mostrarNotificacion('No se encontró el objetivo', 'error');
-            return;
-        }
-        
-        const titulo = this.main.objetivoActual.objetivo || this.main.objetivoActual.meta || this.main.objetivoActual.piloto || 'Sin piloto';
-        document.getElementById('modalSubTitle').textContent = `Tareas de: ${titulo}`;
-        document.getElementById('subprocesosInfo').innerHTML = this.generarInfo(this.main.objetivoActual);
-        
-        await this.cargarPorRegistro(idBuscado);
-        this.main.modal.toggle('modalSubprocesos', true);
+        // Redirigir a la página de gestión de tareas con los parámetros necesarios
+        window.location.href = `dashboard-gestion-tareas.html?objetivo=${encodeURIComponent(idBuscado)}&piloto=${encodeURIComponent(piloto || "")}`;
     }
 
     generarInfo(registro) {
