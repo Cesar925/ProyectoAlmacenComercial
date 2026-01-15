@@ -10,227 +10,8 @@
     <link rel="stylesheet" href="css/output.css">
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="css/dashboard-styles.css">
+    <link rel="stylesheet" href="css/dashboard-styles.objetivos.css">
 
-
-    <style>
-       .dropdown-columns {
-    position: relative;
-    display: inline-block;
-}
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    background-color: white;
-    min-width: 250px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    z-index: 1000;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.dropdown-content.show {
-    display: block;
-}
-
-.column-toggle {
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.column-toggle:hover {
-    background-color: #f3f4f6;
-}
-
-.dropdown-header {
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: 600;
-    border-radius: 8px 8px 0 0;
-}
-
-#filterContent {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease, opacity 0.3s ease;
-}
-
-#filterContent.show {
-    max-height: 600px;
-    opacity: 1;
-    padding-top: 1rem;
-}
-
-.estado-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.estado-completado {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.estado-proceso {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.estado-pendiente {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.progress-bar {
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-    transition: width 0.3s ease;
-}
-
-/* Contenedores de objetivos y metas en la TABLA */
-.objetivos-container,
-.metas-container {
-    max-width: 400px;
-}
-
-/* Items de tabla (NO del modal) */
-tbody .objetivo-item,
-tbody .meta-item {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    position: relative;
-    padding-left: 28px;
-}
-
-tbody .objetivo-item {
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-left: 3px solid #3b82f6;
-}
-
-tbody .meta-item {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    border-left: 3px solid #10b981;
-}
-
-.objetivo-numero,
-.meta-numero {
-    position: absolute;
-    left: 8px;
-    top: 4px;
-    font-weight: 700;
-    font-size: 0.75rem;
-    color: #3b82f6;
-}
-
-.meta-numero {
-    color: #10b981;
-}
-
-/* Badge de contador */
-.badge-grupo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    height: 24px;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    border-radius: 50%;
-    padding: 0 6px;
-    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
-}
-
-/* Fila del grupo */
-.grupo-row {
-    border-left: 4px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.grupo-row:hover {
-    border-left-color: #6366f1;
-    background: linear-gradient(90deg, #f5f3ff 0%, #ffffff 100%) !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* Alineación superior */
-.align-top {
-    vertical-align: top !important;
-}
-
-/* ========== MODAL STYLES ========== */
-
-/* Scrollbar personalizado */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
-}
-
-/* Animación suave al abrir modal */
-#modalObjetivo.flex > div {
-    animation: modalSlideUp 0.3s ease-out;
-}
-
-@keyframes modalSlideUp {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Items del MODAL (objetivos/metas editables) */
-#listaObjetivos .objetivo-item,
-#listaMetas .meta-item {
-    padding: 0; /* Reset padding para items del modal */
-    background: transparent;
-    border: none;
-    position: relative;
-}
-
-/* Scroll suave */
-.custom-scrollbar {
-    scroll-behavior: smooth;
-}
-    </style>
 </head>
 
 <body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -417,25 +198,25 @@ tbody .meta-item {
     </div>
 
     <!-- Modal Objetivo -->
-<div id="modalObjetivo" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
-        <!-- Header fijo -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-2xl flex-shrink-0">
-            <h3 id="modalTitle" class="text-xl font-bold">Nuevo Objetivo</h3>
-        </div>
-        
-        <!-- Contenido con scroll -->
-        <div class="overflow-y-auto flex-1 p-6 custom-scrollbar" style="max-height: calc(100vh - 12rem);">
-            <form id="formObjetivo">
-                <input type="hidden" id="modalId">
+    <div id="modalObjetivo" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+            <!-- Header fijo -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-2xl flex-shrink-0">
+                <h3 id="modalTitle" class="text-xl font-bold">Nuevo Objetivo</h3>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Piloto *</label>
-                        <input type="text" id="modalPiloto" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
+            <!-- Contenido con scroll -->
+            <div class="overflow-y-auto flex-1 p-6 custom-scrollbar" style="max-height: calc(100vh - 12rem);">
+                <form id="formObjetivo">
+                    <input type="hidden" id="modalId">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Piloto *</label>
+                            <input type="text" id="modalPiloto" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <!--<div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Granja *</label>
                         <input type="text" id="modalGranja" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -444,89 +225,125 @@ tbody .meta-item {
                         <label class="block text-sm font-medium text-gray-700 mb-1">Galpón</label>
                         <input type="text" id="modalGalpon"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
+                    </div>-->
 
-                    <!-- Lista de Objetivos con scroll -->
-                    <div class="md:col-span-2">
-                        <div class="flex items-center justify-between mb-2">
-                            <label class="block text-sm font-medium text-gray-700">Objetivos *</label>
-                            <button type="button" id="btnAgregarObjetivo"
-                                class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
-                                <i class="fas fa-plus mr-1"></i>
-                                Agregar Objetivo
-                            </button>
-                        </div>
-                        <div id="listaObjetivos" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                            <!-- Objetivos dinámicos -->
-                            <div class="objetivo-item flex gap-2">
-                                <textarea rows="2" placeholder="Describe el objetivo..."
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 objetivo-text"></textarea>
-                                <button type="button" class="btn-eliminar-objetivo text-red-600 hover:text-red-800 px-2" style="display: none;">
-                                    <i class="fas fa-trash"></i>
+                        <!-- Lista de Granjas-Galpones con scroll -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Granjas y Galpones *</label>
+                                <button type="button" id="btnAgregarGranjaGalpon"
+                                    class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Agregar Granja-Galpón
                                 </button>
                             </div>
+                            <div id="listaGranjasGalpones"
+                                class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- ⬅️ DEBE TENER ESTE ID -->
+                                <div class="granja-galpon-item flex gap-2">
+                                    <select
+                                        class="granja-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm"
+                                        required>
+                                        <option value="">-- Seleccione granja --</option>
+                                    </select>
+                                    <select
+                                        class="galpon-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                                        <option value="">-- Seleccione granja primero --</option>
+                                    </select>
+                                    <button type="button"
+                                        class="btn-eliminar-granja-galpon text-red-600 hover:text-red-800 px-2"
+                                        style="display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="chipsGranjasGalpones" class="flex flex-wrap gap-2 mt-2"></div>
                         </div>
-                    </div>
 
-                    <!-- Lista de Metas con scroll -->
-                    <div class="md:col-span-2">
-                        <div class="flex items-center justify-between mb-2">
-                            <label class="block text-sm font-medium text-gray-700">Metas *</label>
-                            <button type="button" id="btnAgregarMeta"
-                                class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
-                                <i class="fas fa-plus mr-1"></i>
-                                Agregar Meta
-                            </button>
-                        </div>
-                        <div id="listaMetas" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                            <!-- Metas dinámicas -->
-                            <div class="meta-item flex gap-2">
-                                <textarea rows="2" placeholder="Describe la meta..."
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 meta-text"></textarea>
-                                <button type="button" class="btn-eliminar-meta text-red-600 hover:text-red-800 px-2" style="display: none;">
-                                    <i class="fas fa-trash"></i>
+
+                        <!-- Lista de Objetivos con scroll -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Objetivos *</label>
+                                <button type="button" id="btnAgregarObjetivo"
+                                    class="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Agregar Objetivo
                                 </button>
                             </div>
+                            <div id="listaObjetivos" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- Objetivos dinámicos -->
+                                <div class="objetivo-item flex gap-2">
+                                    <textarea rows="2" placeholder="Describe el objetivo..."
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 objetivo-text"></textarea>
+                                    <button type="button"
+                                        class="btn-eliminar-objetivo text-red-600 hover:text-red-800 px-2"
+                                        style="display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Metas con scroll -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-medium text-gray-700">Metas *</label>
+                                <button type="button" id="btnAgregarMeta"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold py-1 px-3 rounded-lg">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Agregar Meta
+                                </button>
+                            </div>
+                            <div id="listaMetas" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                                <!-- Metas dinámicas -->
+                                <div class="meta-item flex gap-2">
+                                    <textarea rows="2" placeholder="Describe la meta..."
+                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 meta-text"></textarea>
+                                    <button type="button" class="btn-eliminar-meta text-red-600 hover:text-red-800 px-2"
+                                        style="display: none;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
+                            <input type="date" id="modalInicio" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin *</label>
+                            <input type="date" id="modalFin" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="modalEstado"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En Proceso">En Proceso</option>
+                            </select>
                         </div>
                     </div>
+                </form>
+            </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
-                        <input type="date" id="modalInicio" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin *</label>
-                        <input type="date" id="modalFin" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                        <select id="modalEstado"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="En Proceso">En Proceso</option>
-                            <option value="Completado">Completado</option>
-                        </select>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Footer fijo -->
-        <div class="flex justify-end gap-3 p-4 border-t bg-gray-50 rounded-b-2xl flex-shrink-0">
-            <button type="button" id="btnCancelar"
-                class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg">
-                Cancelar
-            </button>
-            <button type="submit" id="btnGuardar" form="formObjetivo"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg">
-                <i class="fas fa-save mr-2"></i>
-                Guardar
-            </button>
+            <!-- Footer fijo -->
+            <div class="flex justify-end gap-3 p-4 border-t bg-gray-50 rounded-b-2xl flex-shrink-0">
+                <button type="button" id="btnCancelar"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg">
+                    Cancelar
+                </button>
+                <button type="submit" id="btnGuardar" form="formObjetivo"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg">
+                    <i class="fas fa-save mr-2"></i>
+                    Guardar
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
 
     <!-- Modal Subprocesos -->
@@ -556,7 +373,9 @@ tbody .meta-item {
                                 <th class="px-3 py-2 text-center">Días</th>
                                 <th class="px-3 py-2 text-left">Inicio</th>
                                 <th class="px-3 py-2 text-left">Fin</th>
+                                <th class="px-3 py-2 text-left">Predecesoras</th>
                                 <th class="px-3 py-2 text-left">Recursos</th>
+                                <th class="px-3 py-2 text-right">Presupuesto</th>
                                 <th class="px-3 py-2 text-center">Estado</th>
                                 <th class="px-3 py-2 text-center">Acciones</th>
                             </tr>
@@ -595,10 +414,15 @@ tbody .meta-item {
                     </div>
                     <!-- Selector de tarea padre (solo visible para subtareas) -->
                     <div id="contenedorTareaPadre" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tarea Principal (padre) *</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <!--Tarea Padre (puede ser principal o subtarea) *
+                            <span class="text-xs text-gray-500 font-normal block mt-1">
+                                <i class="fas fa-info-circle"></i> Puedes crear niveles ilimitados de subtareas
+                            </span>-->
+                        </label>
                         <select id="tareaPadre"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
-                            <option value="">-- Seleccione tarea principal --</option>
+                            <option value="">-- Seleccione tarea padre --</option>
                         </select>
                     </div>
                     <div>
@@ -618,6 +442,14 @@ tbody .meta-item {
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
                         </div>
                     </div>
+                        <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Predecesoras
+                            <span class="text-xs text-gray-500 font-normal"><!--(Tareas que deben completarse antes)--></span>
+                        </label>
+                        <input type="text" id="tareaPredesesoras" placeholder="Ej: 1, 2, 3"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Duración (días)</label>
@@ -634,10 +466,17 @@ tbody .meta-item {
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Recursos Asignados</label>
-                        <input type="text" id="tareaRecursos" placeholder="Ej: Comedor, Todos, etc."
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                    <div class="flex gap-2">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Recursos Asignados</label>
+                            <input type="text" id="tareaRecursos" placeholder="Ej: Comedor, Todos, etc."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Presupuesto (S/)</label>
+                            <input type="number" id="tareaPresupuesto" step="0.01" min="0" placeholder="0.00"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
                     </div>
                 </div>
 
@@ -667,106 +506,229 @@ tbody .meta-item {
     </div>
 
     <!-- Scripts con rutas relativas -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/utils/swal-helpers.js"></script>
     <script src="js/config/control-objetivos.config.js"></script>
     <script src="js/services/control-objetivos.service.js"></script>
-    <script src="js/controllers/control-objetivos.controller.js"></script>
-    <!-- <script src="js/utils/funcionesVarias.js"></script>-->
+    <script src="js/controllers/control-objetivos.controller.backup.js?v=20260104"></script>
 
     <script>
-        // Declarar controller en scope global para que los onclick funcionen
-        let controller;
+    // Declarar controller en scope global para que los onclick funcionen
+    let controller;
 
-        // Gestión de objetivos y metas dinámicos
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Inicializar controlador DENTRO de DOMContentLoaded
-            controller = new ControlObjetivosController();
-            await controller.init();
+    // Gestión de objetivos y metas dinámicos
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Inicializar controlador DENTRO de DOMContentLoaded
+        controller = new ControlObjetivosController();
+        await controller.init();
 
-            // Agregar objetivo
-            document.getElementById('btnAgregarObjetivo').addEventListener('click', function() {
-                const listaObjetivos = document.getElementById('listaObjetivos');
-                const nuevoObjetivo = document.createElement('div');
-                nuevoObjetivo.className = 'objetivo-item flex gap-2';
-                nuevoObjetivo.innerHTML = `
-                    <textarea rows="2" placeholder="Describe el objetivo..." 
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 objetivo-text"></textarea>
-                    <button type="button" class="btn-eliminar-objetivo text-red-600 hover:text-red-800 px-2">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                `;
-                listaObjetivos.appendChild(nuevoObjetivo);
-                actualizarBotonesEliminar();
-            });
-
-            // Agregar meta
-            document.getElementById('btnAgregarMeta').addEventListener('click', function() {
-                const listaMetas = document.getElementById('listaMetas');
-                const nuevaMeta = document.createElement('div');
-                nuevaMeta.className = 'meta-item flex gap-2';
-                nuevaMeta.innerHTML = `
-                    <textarea rows="2" placeholder="Describe la meta..." 
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 meta-text"></textarea>
-                    <button type="button" class="btn-eliminar-meta text-red-600 hover:text-red-800 px-2">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                `;
-                listaMetas.appendChild(nuevaMeta);
-                actualizarBotonesEliminar();
-            });
-
-            // Eliminar objetivos
-            document.getElementById('listaObjetivos').addEventListener('click', function(e) {
-                const btnEliminar = e.target.closest('.btn-eliminar-objetivo');
-                if (btnEliminar) {
-                    const item = btnEliminar.closest('.objetivo-item');
-                    if (document.querySelectorAll('.objetivo-item').length > 1) {
-                        item.remove();
-                        actualizarBotonesEliminar();
-                    } else {
-                        alert('Debe haber al menos un objetivo');
-                    }
-                }
-            });
-
-            // Eliminar metas
-            document.getElementById('listaMetas').addEventListener('click', function(e) {
-                const btnEliminar = e.target.closest('.btn-eliminar-meta');
-                if (btnEliminar) {
-                    const item = btnEliminar.closest('.meta-item');
-                    if (document.querySelectorAll('.meta-item').length > 1) {
-                        item.remove();
-                        actualizarBotonesEliminar();
-                    } else {
-                        alert('Debe haber al menos una meta');
-                    }
-                }
-            });
-
-            // Función para mostrar/ocultar botones de eliminar
-            function actualizarBotonesEliminar() {
-                const objetivos = document.querySelectorAll('.objetivo-item');
-                objetivos.forEach((item, index) => {
-                    const btn = item.querySelector('.btn-eliminar-objetivo');
-                    btn.style.display = objetivos.length > 1 ? 'block' : 'none';
-                });
-
-                const metas = document.querySelectorAll('.meta-item');
-                metas.forEach((item, index) => {
-                    const btn = item.querySelector('.btn-eliminar-meta');
-                    btn.style.display = metas.length > 1 ? 'block' : 'none';
-                });
-            }
-
+        // Agregar objetivo
+        document.getElementById('btnAgregarObjetivo').addEventListener('click', function () {
+            const listaObjetivos = document.getElementById('listaObjetivos');
+            const nuevoObjetivo = document.createElement('div');
+            nuevoObjetivo.className = 'objetivo-item flex gap-2';
+            nuevoObjetivo.innerHTML = `
+                <textarea rows="2" placeholder="Describe el objetivo..." 
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 objetivo-text"></textarea>
+                <button type="button" class="btn-eliminar-objetivo text-red-600 hover:text-red-800 px-2">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            listaObjetivos.appendChild(nuevoObjetivo);
             actualizarBotonesEliminar();
         });
 
-        // Función para cargar datos (llamada desde el index principal)
-        function cargarDatos(tipo) {
-            if (controller) {
-                controller.cargarDatos();
-            }
+        // Agregar meta
+        document.getElementById('btnAgregarMeta').addEventListener('click', function () {
+            const listaMetas = document.getElementById('listaMetas');
+            const nuevaMeta = document.createElement('div');
+            nuevaMeta.className = 'meta-item flex gap-2';
+            nuevaMeta.innerHTML = `
+                <textarea rows="2" placeholder="Describe la meta..." 
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 meta-text"></textarea>
+                <button type="button" class="btn-eliminar-meta text-red-600 hover:text-red-800 px-2">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            listaMetas.appendChild(nuevaMeta);
+            actualizarBotonesEliminar();
+        });
+
+        // ============ AGREGAR ESTO: GESTIÓN DE GRANJAS-GALPONES ============
+
+        // Agregar granja-galpón
+document.getElementById('btnAgregarGranjaGalpon').addEventListener('click', function () {
+    const lista = document.getElementById('listaGranjasGalpones');
+    const nuevoItem = document.createElement('div');
+    nuevoItem.className = 'granja-galpon-item flex gap-2';
+    nuevoItem.innerHTML = `
+        <select class="granja-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm" required>
+            <option value="">-- Seleccione granja --</option>
+        </select>
+        <select class="galpon-select flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+            <option value="">-- Seleccione granja primero --</option>
+        </select>
+        <button type="button" class="btn-eliminar-granja-galpon text-red-600 hover:text-red-800 px-2">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    lista.appendChild(nuevoItem);
+    
+    // ✅ ESPERAR un momento para poblar el select
+    setTimeout(() => {
+        const selectGranja = nuevoItem.querySelector('.granja-select');
+        if (controller && controller.poblarSelectGranjas) {
+            controller.poblarSelectGranjas(selectGranja);
         }
-    </script>
+        renderChipsGranjas();
+    }, 50);
+    
+    actualizarBotonesEliminar();
+});
+
+
+        // Eliminar granja-galpón
+        document.getElementById('listaGranjasGalpones').addEventListener('click', function (e) {
+            const btnEliminar = e.target.closest('.btn-eliminar-granja-galpon');
+            if (btnEliminar) {
+                const items = document.querySelectorAll('.granja-galpon-item');
+                if (items.length > 1) {
+                    btnEliminar.closest('.granja-galpon-item').remove();
+                    actualizarBotonesEliminar();
+                    renderChipsGranjas();
+                } else {
+                    alert('Debe haber al menos una granja-galpón');
+                }
+            }
+        });
+
+        // Cambio de granja para cargar galpones
+        document.getElementById('listaGranjasGalpones').addEventListener('change', function (e) {
+            if (e.target.classList.contains('granja-select')) {
+                if (controller && controller.cargarGalponesParaSelect) {
+                    controller.cargarGalponesParaSelect(e.target);
+                }
+                renderChipsGranjas();
+            }
+
+            if (e.target.classList.contains('galpon-select')) {
+                renderChipsGranjas();
+            }
+        });
+
+        // ============ FIN DE GESTIÓN DE GRANJAS-GALPONES ============
+
+        // Eliminar objetivos
+        document.getElementById('listaObjetivos').addEventListener('click', function (e) {
+            const btnEliminar = e.target.closest('.btn-eliminar-objetivo');
+            if (btnEliminar) {
+                const item = btnEliminar.closest('.objetivo-item');
+                if (document.querySelectorAll('.objetivo-item').length > 1) {
+                    item.remove();
+                    actualizarBotonesEliminar();
+                } else {
+                    alert('Debe haber al menos un objetivo');
+                }
+            }
+        });
+
+        // Eliminar metas
+        document.getElementById('listaMetas').addEventListener('click', function (e) {
+            const btnEliminar = e.target.closest('.btn-eliminar-meta');
+            if (btnEliminar) {
+                const item = btnEliminar.closest('.meta-item');
+                if (document.querySelectorAll('.meta-item').length > 1) {
+                    item.remove();
+                    actualizarBotonesEliminar();
+                } else {
+                    alert('Debe haber al menos una meta');
+                }
+            }
+        });
+
+       function actualizarBotonesEliminar() {
+    // Objetivos
+    const objetivos = document.querySelectorAll('#listaObjetivos .objetivo-item');
+    objetivos.forEach((item) => {
+        const btn = item.querySelector('.btn-eliminar-objetivo');
+        if (btn) {
+            btn.style.display = objetivos.length > 1 ? 'block' : 'none';
+        }
+    });
+
+    // Metas
+    const metas = document.querySelectorAll('#listaMetas .meta-item');
+    metas.forEach((item) => {
+        const btn = item.querySelector('.btn-eliminar-meta');
+        if (btn) {
+            btn.style.display = metas.length > 1 ? 'block' : 'none';
+        }
+    });
+
+    // ⬇️ AGREGAR ESTO: Granjas-Galpones
+    const granjasGalpones = document.querySelectorAll('#listaGranjasGalpones .granja-galpon-item');
+    granjasGalpones.forEach((item) => {
+        const btn = item.querySelector('.btn-eliminar-granja-galpon');
+        if (btn) {
+            btn.style.display = granjasGalpones.length > 1 ? 'block' : 'none';
+        }
+    });
+}
+
+    function renderChipsGranjas() {
+        const container = document.getElementById('chipsGranjasGalpones');
+        if (!container) return;
+
+        const items = document.querySelectorAll('#listaGranjasGalpones .granja-galpon-item');
+        container.innerHTML = '';
+
+        items.forEach((item, index) => {
+            const granjaSelect = item.querySelector('.granja-select');
+            const galponSelect = item.querySelector('.galpon-select');
+            const granjaText = granjaSelect?.selectedOptions[0]?.text || '';
+            const galponText = galponSelect?.selectedOptions[0]?.text || '';
+
+            if (!granjaSelect?.value) return; // solo chips con granja elegida
+
+            const chip = document.createElement('div');
+            chip.className = 'flex items-center gap-2 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded-full px-3 py-1 text-xs font-semibold';
+            chip.innerHTML = `
+                <span>${granjaText}${galponSelect?.value ? ' / ' + galponText : ''}</span>
+                <button type="button" aria-label="Quitar" class="text-red-500 hover:text-red-700 font-bold">×</button>
+            `;
+
+            chip.querySelector('button').addEventListener('click', () => {
+                const currentItems = document.querySelectorAll('#listaGranjasGalpones .granja-galpon-item');
+                if (currentItems.length > 1) {
+                    item.remove();
+                } else {
+                    // si es el único, limpiar selects en vez de eliminar
+                    granjaSelect.value = '';
+                    if (galponSelect) {
+                        galponSelect.innerHTML = '<option value="">-- Seleccione granja primero --</option>';
+                    }
+                }
+                actualizarBotonesEliminar();
+                renderChipsGranjas();
+            });
+
+            container.appendChild(chip);
+        });
+    }
+
+
+        actualizarBotonesEliminar();
+        renderChipsGranjas();
+    });
+
+    // Función para cargar datos (llamada desde el index principal)
+    function cargarDatos(tipo) {
+        if (controller) {
+            controller.cargarDatos();
+        }
+    }
+</script>
+
 </body>
 
 </html>

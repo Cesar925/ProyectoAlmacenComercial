@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tareas - ProyectoAlmacenComercial</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="css/output.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="css/dashboard-styles.css">
+    <link rel="stylesheet" href="css/dashboard-styles-tareas.css">
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button onclick="history.back()" class="text-gray-600 hover:text-gray-800 transition">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </button>
+                    <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-tasks text-indigo-600"></i>
+                        Gestión de Tareas
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-600">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userName">Usuario</span>
+                    </span>
+                    <button id="btnCerrarSesion" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- Información del Objetivo -->
+        <section class="bg-white rounded-2xl card-shadow p-4 mb-4 slide-down">
+            <h2 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                <i class="fas fa-info-circle text-blue-600"></i>
+                Información del Objetivo
+            </h2>
+            <div id="objetivoInfo" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-600">Piloto:</span>
+                    <span id="infoPiloto" class="text-gray-800">-</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-600">Granja:</span>
+                    <span id="infoGranja" class="text-gray-800">-</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-600">Galpón:</span>
+                    <span id="infoGalpon" class="text-gray-800">-</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-600">Objetivo:</span>
+                    <span id="infoObjetivo" class="text-gray-800">-</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-600">Meta:</span>
+                    <span id="infoMeta" class="text-gray-800">-</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-gray-600">Estado:</span>
+                    <span id="infoEstado" class="px-3 py-1 rounded-full text-xs font-semibold">-</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Acciones -->
+        <section class="bg-white rounded-2xl card-shadow p-4 mb-4 slide-down">
+            <div class="flex flex-wrap gap-3 items-center justify-between">
+                <div class="flex flex-wrap gap-3">
+                    <button id="btnNuevaTarea"
+                        class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow btn-hover-scale">
+                        <i class="fas fa-plus mr-2"></i>
+                        Nueva Tarea
+                    </button>
+                    <button id="btnActualizar"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow btn-hover-scale">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        Actualizar
+                    </button>
+                </div>
+                <div class="flex gap-2 items-center">
+                    <span class="text-sm text-gray-600">Total tareas:</span>
+                    <span id="totalTareas" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-semibold text-sm">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabla de Tareas -->
+        <section class="bg-white rounded-2xl card-shadow p-4 slide-down">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gradient-to-r from-indigo-50 to-blue-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">
+                                <i class="fas fa-list-ol mr-2"></i>Tarea
+                            </th>
+                            <th class="px-4 py-3 text-center font-semibold text-gray-700">
+                                <i class="fas fa-calendar-day mr-1"></i>Días
+                            </th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">
+                                <i class="fas fa-calendar-alt mr-1"></i>Inicio
+                            </th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">
+                                <i class="fas fa-calendar-check mr-1"></i>Fin
+                            </th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">
+                                <i class="fas fa-link mr-1"></i>Predecesoras
+                            </th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700">
+                                <i class="fas fa-users mr-1"></i>Recursos
+                            </th>
+                            <th class="px-4 py-3 text-right font-semibold text-gray-700">
+                                <i class="fas fa-dollar-sign mr-1"></i>Presupuesto
+                            </th>
+                            <th class="px-4 py-3 text-center font-semibold text-gray-700">
+                                <i class="fas fa-flag mr-1"></i>Estado
+                            </th>
+                            <th class="px-4 py-3 text-center font-semibold text-gray-700">
+                                <i class="fas fa-cog mr-1"></i>Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyTareas" class="divide-y divide-gray-100">
+                        <tr>
+                            <td colspan="9" class="text-center py-8 text-gray-500">
+                                <i class="fas fa-inbox text-4xl mb-2"></i>
+                                <p>No hay tareas registradas</p>
+                                <button onclick="document.getElementById('btnNuevaTarea').click()" 
+                                    class="mt-3 text-blue-600 hover:text-blue-800 font-semibold">
+                                    <i class="fas fa-plus mr-1"></i>Crear primera tarea
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Estadísticas -->
+        <section class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl p-4 shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Pendientes</p>
+                        <p id="statPendientes" class="text-2xl font-bold text-orange-600">0</p>
+                    </div>
+                    <i class="fas fa-clock text-3xl text-orange-200"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">En Proceso</p>
+                        <p id="statEnProceso" class="text-2xl font-bold text-blue-600">0</p>
+                    </div>
+                    <i class="fas fa-spinner text-3xl text-blue-200"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Completadas</p>
+                        <p id="statCompletadas" class="text-2xl font-bold text-green-600">0</p>
+                    </div>
+                    <i class="fas fa-check-circle text-3xl text-green-200"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-600">Presupuesto Total</p>
+                        <p id="statPresupuesto" class="text-2xl font-bold text-purple-600">$0</p>
+                    </div>
+                    <i class="fas fa-dollar-sign text-3xl text-purple-200"></i>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Nueva/Editar Tarea -->
+    <div id="modalTarea" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4 rounded-t-2xl flex justify-between items-center sticky top-0">
+                <h3 id="modalTareaTitle" class="text-xl font-bold">
+                    <i class="fas fa-tasks mr-2"></i>Nueva Tarea
+                </h3>
+                <button type="button" id="btnCerrarTarea" class="text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="formTarea" class="p-6">
+                <input type="hidden" id="tareaId">
+                <input type="hidden" id="tareaIdObjetivo">
+
+                <div class="space-y-4">
+                    <!-- Tipo de Tarea -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-layer-group mr-1"></i>Tipo de Tarea *
+                        </label>
+                        <select id="tareaTipo" required
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="principal">🎯 Tarea Principal</option>
+                            <option value="subtarea">📋 Sub-tarea</option>
+                        </select>
+                    </div>
+
+                    <!-- Tarea Padre -->
+                    <div id="contenedorTareaPadre" class="hidden bg-blue-50 p-4 rounded-lg">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-sitemap mr-1"></i>Tarea Padre
+                            <span class="text-xs text-gray-500 font-normal block mt-1">
+                                <i class="fas fa-info-circle"></i> Selecciona la tarea a la que pertenece esta sub-tarea
+                            </span>
+                        </label>
+                        <select id="tareaPadre"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">-- Seleccione tarea padre --</option>
+                        </select>
+                    </div>
+
+                    <!-- Nombre -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-tag mr-1"></i>Nombre de la Tarea *
+                        </label>
+                        <input type="text" id="tareaNombre" required placeholder="Ej: Reunión de coordinación"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Fechas -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt mr-1"></i>Fecha Inicio *
+                            </label>
+                            <input type="date" id="tareaFechaInicio" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar-check mr-1"></i>Fecha Fin *
+                            </label>
+                            <input type="date" id="tareaFechaFin" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Duración y Estado -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-hourglass-half mr-1"></i>Duración (días)
+                            </label>
+                            <input type="number" id="tareaDuracion" min="0" placeholder="Calculado automáticamente"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-flag mr-1"></i>Estado
+                            </label>
+                            <select id="tareaEstado"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="Pendiente">⏳ Pendiente</option>
+                                <option value="En Proceso">🔄 En Proceso</option>
+                                <option value="Completado">✅ Completado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Predecesoras -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-link mr-1"></i>Predecesoras
+                            <span class="text-xs text-gray-500 font-normal">
+                                (Tareas que deben completarse antes)
+                            </span>
+                        </label>
+                        <input type="text" id="tareaPredesesoras" placeholder="Ej: 1, 2, 3"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <!-- Recursos y Presupuesto -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-users mr-1"></i>Recursos Asignados
+                            </label>
+                            <input type="text" id="tareaRecursos" placeholder="Ej: Comedor, Todos, etc."
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-dollar-sign mr-1"></i>Presupuesto (S/)
+                            </label>
+                            <input type="number" id="tareaPresupuesto" step="0.01" min="0" placeholder="0.00"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                    <button type="button" id="btnCancelarTarea"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button type="submit"
+                        class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Guardar Tarea
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sweet Alert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Scripts -->
+    <script src="js/config/config.js"></script>
+    <script src="js/services/auth.service.js"></script>
+    <script src="js/services/control-objetivos.service.js"></script>
+    <script src="js/utils/role-manager.js"></script>
+    <script src="js/utils/swal-helpers.js"></script>
+    <script src="js/controllers/session.controller.js"></script>
+    <script src="js/controllers/gestion-tareas.controller.js"></script>
+
+</body>
+</html>

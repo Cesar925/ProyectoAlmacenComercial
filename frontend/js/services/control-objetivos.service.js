@@ -2,14 +2,19 @@ class ControlObjetivosService {
     constructor() {
         this.config = window.ControlObjetivosConfig;
         this.baseUrl = this.config.API.BASE_URL;
+        //this.baseUrl = this.config.API.BASEURL;
     }
 
     async getAll() {
         try {
             const url = `${this.baseUrl}${this.config.API.ENDPOINTS.ALL}`;
+            console.log('Llamando a URL:', url);
             const response = await fetch(url);
-            if (!response.ok) throw new Error('Error en la petición');
-            return await response.json();
+            console.log('Response status:', response.status);
+            if (!response.ok) throw new Error('Error en la petición: ' + response.status);
+            const data = await response.json();
+            console.log('Datos recibidos:', data);
+            return data;
         } catch (error) {
             console.error('Error en getAll:', error);
             throw error;
@@ -139,13 +144,20 @@ class ControlObjetivosService {
     async createSubproceso(data) {
         try {
             const url = `${this.baseUrl}${this.config.API.ENDPOINTS.SUBPROCESO_CREAR}`;
+            console.log('Enviando datos:', data);
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            if (!response.ok) throw new Error('Error al crear tarea');
-            return await response.json();
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || 'Error al crear tarea');
+            }
+            
+            return result;
         } catch (error) {
             console.error('Error en createSubproceso:', error);
             throw error;
