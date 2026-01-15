@@ -6,185 +6,294 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirmación y Cierre - Ejecución de Proyectos</title>
 
+    <!-- CSS Files -->
     <link rel="stylesheet" href="css/output.css">
     <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-
-    <style>
-        /* Estilos específicos ligeros */
-        .card-shadow {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #10b981;
-            border-radius: 4px;
-        }
-
-        /* Verde Esmeralda */
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #059669;
-        }
-
-        .slide-down {
-            animation: slideDown 0.4s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/dashboard-styles-confirmacion.css">
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
     <div class="container mx-auto px-4 py-6">
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 slide-down">
-            <div
-                class="bg-white p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-xs font-bold uppercase">Pendientes de Cierre</p>
-                    <h3 id="kpiPendientes" class="text-2xl font-bold text-gray-800">0</h3>
-                </div>
-                <div class="p-3 bg-emerald-100 rounded-full text-emerald-600">
-                    <i class="fas fa-clipboard-check text-xl"></i>
-                </div>
-            </div>
-            <div class="bg-white p-4 rounded-xl border-l-4 border-blue-500 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-xs font-bold uppercase">Presupuesto Ejecutado</p>
-                    <h3 id="kpiPresupuesto" class="text-2xl font-bold text-gray-800">S/ 0.00</h3>
-                </div>
-                <div class="p-3 bg-blue-100 rounded-full text-blue-600">
-                    <i class="fas fa-coins text-xl"></i>
-                </div>
-            </div>
-            <div
-                class="bg-white p-4 rounded-xl border-l-4 border-orange-400 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-xs font-bold uppercase">Desviación de Tiempo</p>
-                    <h3 id="kpiDesviacion" class="text-2xl font-bold text-gray-800">0 Días</h3>
-                </div>
-                <div class="p-3 bg-orange-100 rounded-full text-orange-600">
-                    <i class="fas fa-clock text-xl"></i>
+        <!-- Header con gradiente -->
+        <div class="mb-6 slide-down">
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-2xl shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">
+                            <i class="fas fa-clipboard-check mr-3"></i>Confirmación y Cierre
+                        </h1>
+                        <p class="text-emerald-100 text-sm">Ejecución y validación de objetivos completados</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-emerald-100 text-xs uppercase tracking-wider mb-1">Sistema de Gestión</div>
+                        <div class="text-2xl font-bold">Objetivos</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <section class="bg-white rounded-xl shadow-sm p-4 mb-4 slide-down">
-            <div class="flex flex-wrap gap-4 items-end">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Buscar Objetivo / Piloto</label>
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        <input id="inputBusqueda" type="text" placeholder="Escribe para buscar..."
-                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
+        <!-- KPIs Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 slide-down">
+            <div class="bg-white p-6 rounded-xl border-l-4 border-emerald-500 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Pendientes de Cierre</p>
+                        <h3 id="kpiPendientes" class="text-3xl font-bold text-gray-800">0</h3>
+                        <p class="text-emerald-600 text-xs font-semibold mt-1">
+                            <i class="fas fa-arrow-up mr-1"></i>Objetivos en proceso
+                        </p>
+                    </div>
+                    <div class="p-4 bg-emerald-100 rounded-2xl text-emerald-600 shadow-md">
+                        <i class="fas fa-clipboard-check text-3xl"></i>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Estado</label>
-                    <select id="selectEstado"
-                        class="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 bg-white">
-                        <option value="En Proceso">En Proceso (Para Cerrar)</option>
-                        <option value="Completado">Cerrados</option>
-                        <option value="Todos" selected>Todos</option>
-                    </select>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Presupuesto Ejecutado</p>
+                        <h3 id="kpiPresupuesto" class="text-3xl font-bold text-gray-800">S/ 0.00</h3>
+                        <p class="text-blue-600 text-xs font-semibold mt-1">
+                            <i class="fas fa-chart-line mr-1"></i>Total invertido
+                        </p>
+                    </div>
+                    <div class="p-4 bg-blue-100 rounded-2xl text-blue-600 shadow-md">
+                        <i class="fas fa-coins text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl border-l-4 border-orange-400 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Desviación de Tiempo</p>
+                        <h3 id="kpiDesviacion" class="text-3xl font-bold text-gray-800">0 Días</h3>
+                        <p class="text-orange-600 text-xs font-semibold mt-1">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>Promedio de retraso
+                        </p>
+                    </div>
+                    <div class="p-4 bg-orange-100 rounded-2xl text-orange-600 shadow-md">
+                        <i class="fas fa-clock text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Acciones -->
+        <section class="bg-white rounded-xl shadow-lg p-6 mb-6 slide-down">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-700 flex items-center gap-2">
+                    <i class="fas fa-sliders-h text-purple-600"></i>
+                    Acciones
+                </h2>
+                
+                <!-- Dropdown Columnas -->
+                <div class="dropdown-columns">
+                    <button id="btnToggleColumns" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2 font-medium">
+                        <i class="fas fa-columns"></i>
+                        Columnas
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="columnDropdown" class="dropdown-content custom-scrollbar">
+                        <div class="dropdown-header">
+                            <i class="fas fa-eye mr-2"></i>Mostrar/Ocultar Columnas
+                        </div>
+                        <label class="column-toggle">
+                            <input type="checkbox" data-column="0" checked>
+                            <span>Objetivo / Tarea</span>
+                        </label>
+                        <label class="column-toggle">
+                            <input type="checkbox" data-column="1" checked>
+                            <span>Responsable</span>
+                        </label>
+                        <label class="column-toggle">
+                            <input type="checkbox" data-column="2" checked>
+                            <span>Plazo Planificado</span>
+                        </label>
+                        <label class="column-toggle">
+                            <input type="checkbox" data-column="3" checked>
+                            <span>Progreso</span>
+                        </label>
+                        <label class="column-toggle">
+                            <input type="checkbox" data-column="4" checked>
+                            <span>Acción</span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="bg-white rounded-xl shadow-lg overflow-hidden slide-down">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                <h2 class="font-bold text-gray-700">Listado de Ejecución</h2>
-                <!--<span class="text-xs text-gray-400 italic"><i class="fas fa-info-circle mr-1"></i>Selecciona "Validar"
-                    para cerrar un objetivo</span>-->
+        <!-- Sección de Filtros -->
+        <section class="bg-white rounded-xl shadow-lg p-6 mb-6 slide-down">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-700 flex items-center gap-2">
+                    <i class="fas fa-filter text-emerald-600"></i>
+                    Filtros
+                </h2>
+                <div class="flex gap-2">
+                    <button id="btnToggleFiltros" class="text-gray-600 hover:text-emerald-600 transition-colors duration-200 font-medium text-sm flex items-center gap-1">
+                        <i class="fas fa-chevron-down"></i>
+                        <span>Expandir</span>
+                    </button>
+                    <button id="btnLimpiarFiltros" class="px-3 py-1 text-sm text-gray-600 hover:text-red-600 border border-gray-300 rounded-lg hover:border-red-600 transition-all duration-200 flex items-center gap-1">
+                        <i class="fas fa-times-circle"></i>
+                        Limpiar
+                    </button>
+                </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <div id="filterContent">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                            <i class="far fa-calendar mr-1"></i>Fecha Inicio
+                        </label>
+                        <input id="filterFechaInicio" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                            <i class="far fa-calendar mr-1"></i>Fecha Fin
+                        </label>
+                        <input id="filterFechaFin" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                            <i class="fas fa-search mr-1"></i>Buscar
+                        </label>
+                        <input id="inputBusqueda" type="text" placeholder="Objetivo, piloto..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">
+                            <i class="fas fa-tasks mr-1"></i>Estado
+                        </label>
+                        <select id="selectEstado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white transition-all duration-200">
+                            <option value="Todos" selected>Todos</option>
+                            <option value="En Proceso">En Proceso (Para Cerrar)</option>
+                            <option value="Completado">Cerrados</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                    <button id="btnAplicarFiltros" class="px-6 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 font-medium flex items-center gap-2">
+                        <i class="fas fa-search"></i>
+                        Aplicar Filtros
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabla de Listado -->
+        <section class="bg-white rounded-xl shadow-xl overflow-hidden slide-down">
+            <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-list-ul text-emerald-600"></i>
+                        Listado de Ejecución
+                    </h2>
+                    <span class="text-xs text-gray-500 italic">
+                        <i class="fas fa-info-circle mr-1"></i>Selecciona "Validar" para cerrar un objetivo
+                    </span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-sm text-left">
-                    <thead class="text-xs text-gray-500 uppercase bg-gray-100 border-b">
+                    <thead class="text-xs text-gray-600 uppercase bg-gradient-to-r from-gray-100 to-gray-200 border-b-2 border-gray-300">
                         <tr>
-                            <th class="px-6 py-3">Objetivo / Tarea</th>
-                            <th class="px-6 py-3">Responsable</th>
-                            <th class="px-6 py-3 text-center">Plazo Planificado</th>
-                            <th class="px-6 py-3 text-center">Progreso</th>
-                            <th class="px-6 py-3 text-center">Acción</th>
+                            <th class="px-6 py-4 font-bold">
+                                <i class="fas fa-bullseye mr-2"></i>Objetivo / Tarea
+                            </th>
+                            <th class="px-6 py-4 font-bold">
+                                <i class="fas fa-user mr-2"></i>Responsable
+                            </th>
+                            <th class="px-6 py-4 text-center font-bold">
+                                <i class="far fa-calendar-alt mr-2"></i>Plazo Planificado
+                            </th>
+                            <th class="px-6 py-4 text-center font-bold">
+                                <i class="fas fa-chart-line mr-2"></i>Progreso
+                            </th>
+                            <th class="px-6 py-4 text-center font-bold">
+                                <i class="fas fa-cog mr-2"></i>Acción
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        <tr class="hover:bg-gray-50 transition-colors group">
+                    <tbody id="tbodyConfirmacion" class="divide-y divide-gray-100">
+                        <!-- Ejemplo de fila -->
+                        <tr class="hover:bg-gray-50 transition-colors duration-200 grupo-row">
                             <td class="px-6 py-4">
-                                <div class="font-semibold text-gray-800">Mantenimiento Galpón 4</div>
-                                <div class="text-xs text-gray-500">Granja: San Isidro</div>
+                                <div class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-dot-circle text-blue-500 text-xs"></i>
+                                    Mantenimiento Galpón 4
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>Granja: San Isidro
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
-                                    <div
-                                        class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
-                                        JP</div>
-                                    <span>Juan Pérez</span>
+                                    <div class="w-9 h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-md">
+                                        JP
+                                    </div>
+                                    <span class="font-medium text-gray-700">Juan Pérez</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="bg-gray-100 text-gray-600 py-1 px-3 rounded-full text-xs font-medium">
-                                    01 Ene - 15 Ene
+                                <span class="bg-gray-100 text-gray-700 py-1.5 px-4 rounded-full text-xs font-semibold shadow-sm">
+                                    <i class="far fa-calendar-alt mr-1"></i>01 Ene - 15 Ene
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-                                    <div class="bg-yellow-400 h-2.5 rounded-full" style="width: 80%"></div>
+                                <div class="w-full bg-gray-200 rounded-full h-3 mb-1 shadow-inner">
+                                    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-300" style="width: 80%"></div>
                                 </div>
-                                <div class="text-xs text-center text-gray-500">80%</div>
+                                <div class="text-xs text-center text-gray-600 font-semibold">80%</div>
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <button onclick="abrirModalConfirmacion(1)"
-                                    class="bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-1.5 px-4 rounded-lg shadow-sm transition-all transform hover:scale-105 flex items-center gap-2 ml-auto">
+                            <td class="px-6 py-4 text-center">
+                                <button onclick="abrirModalConfirmacion(1)" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium py-2 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 inline-flex items-center gap-2">
                                     <i class="fas fa-check-double"></i> Validar
                                 </button>
                             </td>
                         </tr>
-                        <tr class="bg-emerald-50/30">
+                        
+                        <!-- Ejemplo de fila completada -->
+                        <tr class="bg-emerald-50/50 hover:bg-emerald-100/50 transition-colors duration-200">
                             <td class="px-6 py-4">
-                                <div class="font-semibold text-gray-800">Vacunación Lote 203</div>
-                                <div class="text-xs text-gray-500">Granja: El Sol</div>
+                                <div class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-emerald-500"></i>
+                                    Vacunación Lote 203
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>Granja: El Sol
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
-                                    <div
-                                        class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">
-                                        MG</div>
-                                    <span>Maria Gomez</span>
+                                    <div class="w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white flex items-center justify-center font-bold text-xs shadow-md">
+                                        MG
+                                    </div>
+                                    <span class="font-medium text-gray-700">Maria Gomez</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="text-xs text-gray-500 line-through">10 Ene - 12 Ene</span>
-                                <div class="text-xs text-emerald-600 font-bold">Cerrado: 12 Ene</div>
+                                <div class="text-xs text-gray-400 line-through mb-1">10 Ene - 12 Ene</div>
+                                <div class="text-xs text-emerald-600 font-bold">
+                                    <i class="fas fa-check mr-1"></i>Cerrado: 12 Ene
+                                </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-                                    <div class="bg-emerald-500 h-2.5 rounded-full" style="width: 100%"></div>
+                                <div class="w-full bg-gray-200 rounded-full h-3 mb-1 shadow-inner">
+                                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 h-3 rounded-full" style="width: 100%"></div>
                                 </div>
                                 <div class="text-xs text-center text-emerald-600 font-bold">Completado</div>
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <button class="text-gray-400 hover:text-gray-600 font-medium py-1.5 px-4 text-sm">
+                            <td class="px-6 py-4 text-center">
+                                <button class="text-gray-600 hover:text-gray-800 font-medium py-2 px-4 text-sm border border-gray-300 rounded-lg hover:border-gray-400 transition-all duration-200 inline-flex items-center gap-2">
                                     <i class="fas fa-eye"></i> Ver Detalle
                                 </button>
                             </td>
@@ -195,65 +304,80 @@
         </section>
     </div>
 
-    <div id="modalConfirmacion"
-        class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm transition-opacity">
-        <!--<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all scale-100">
-        -->
-<div class="bg-white shadow-2xl w-full max-w-2xl transform transition-all scale-100">
-            <div
-                class="btn-validar bg-emerald-500 hover:bg-emerald-600 text-white p-5 rounded-t-2xl flex justify-between items-start flex-shrink-0">
-               
+    <!-- Modal de Confirmación -->
+    <div id="modalConfirmacion" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-50 p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all scale-100 overflow-hidden">
+            <!-- Header del Modal -->
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-6 flex justify-between items-start">
                 <div>
-                    <h3 id="lblObjetivoModal" class="text-xl font-bold">Confirmar Cierre de Objetivo</h3>
-                    <p class="text-emerald-100 text-sm mt-1">Ingresa los datos reales de ejecución para cerrar el flujo.
-                    </p>
+                    <h3 id="lblObjetivoModal" class="text-2xl font-bold mb-1">
+                        <i class="fas fa-check-double mr-2"></i>Confirmar Cierre de Objetivo
+                    </h3>
+                    <p class="text-emerald-100 text-sm">Ingresa los datos reales de ejecución para cerrar el flujo.</p>
                 </div>
-                <button onclick="cerrarModal()" class="text-white hover:text-emerald-200 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
+                <button onclick="cerrarModal()" class="text-white hover:text-emerald-200 transition-colors duration-200 text-2xl">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <form id="formConfirmacion" class="p-6">
-                <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-200">
-                    <h4 class="text-xs font-bold text-gray-400 uppercase mb-3 tracking-wider">Datos Planificados
-                        (Referencia)</h4>
+            <!-- Formulario -->
+            <form id="formConfirmacion" class="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <!-- Datos de referencia -->
+                <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 mb-6 border-l-4 border-blue-500 shadow-sm">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-3 tracking-wider flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        Datos Planificados (Referencia)
+                    </h4>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <p class="text-sm text-gray-500">Objetivo</p>
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Objetivo</p>
                             <p class="font-semibold text-gray-800">Mantenimiento Galpón 4</p>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500">Fecha Límite Planificada</p>
-                            <p class="font-semibold text-gray-800"><i class="far fa-calendar-alt mr-1"></i> 15 de Enero,
-                                2026</p>
+                            <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Fecha Límite Planificada</p>
+                            <p class="font-semibold text-gray-800">
+                                <i class="far fa-calendar-alt mr-1 text-gray-500"></i>15 de Enero, 2026
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <h4 class="text-sm font-bold text-emerald-700 uppercase mb-4 border-b pb-2 flex items-center gap-2">
+                <!-- Título de sección -->
+                <h4 class="text-sm font-bold text-emerald-700 uppercase mb-4 pb-2 border-b-2 border-emerald-200 flex items-center gap-2">
                     <i class="fas fa-edit"></i> Registro de Ejecución Real
                 </h4>
 
+                <!-- Campos del formulario -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio Real *</label>
-                            <input id="inputFechaInicioReal" type="date" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
-                            <p class="text-xs text-gray-400 mt-1">Fecha en la que realmente se inició el trabajo.</p>
+                            <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                                <i class="far fa-calendar-check text-emerald-600"></i>
+                                Fecha Inicio Real <span class="text-red-500">*</span>
+                            </label>
+                            <input id="inputFechaInicioReal" type="date" required class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200">
+                            <p class="text-xs text-gray-500 mt-1 italic">
+                                <i class="fas fa-arrow-right mr-1"></i>Fecha en la que realmente se inició el trabajo.
+                            </p>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Real de Finalización
-                                *</label>
-                            <input id="inputFechaReal" type="date" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow">
-                            <p class="text-xs text-gray-400 mt-1">Fecha en la que realmente se terminó el trabajo.</p>
+                            <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                                <i class="far fa-calendar-check text-emerald-600"></i>
+                                Fecha Real de Finalización <span class="text-red-500">*</span>
+                            </label>
+                            <input id="inputFechaReal" type="date" required class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-200">
+                            <p class="text-xs text-gray-500 mt-1 italic">
+                                <i class="fas fa-arrow-right mr-1"></i>Fecha en la que realmente se terminó el trabajo.
+                            </p>
                         </div>
+
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado Final</label>
-                            <select
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-                                disabled>
+                            <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                                <i class="fas fa-check-circle text-emerald-600"></i>
+                                Estado Final
+                            </label>
+                            <select class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed" disabled>
                                 <option selected>Completado</option>
                             </select>
                         </div>
@@ -261,51 +385,47 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Presupuesto Ejecutado ($)
-                                *</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-2 text-gray-500">$</span>
-                                <input id="inputPresupuesto" type="number" step="0.01" min="0" placeholder="0.00"
-                                    required
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none font-mono text-lg">
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1">Total gastado en insumos/mano de obra.</p>
-                        </div>
-
-                        <!--<div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Evidencia / Factura (Opcional)</label>
-                            <label class="flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-sm text-gray-500">
-                                <i class="fas fa-paperclip"></i> <span>Adjuntar archivo...</span>
-                                <input type="file" class="hidden">
+                            <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                                <i class="fas fa-dollar-sign text-blue-600"></i>
+                                Presupuesto Ejecutado (S/) <span class="text-red-500">*</span>
                             </label>
-                        </div>-->
-
-
-                        <div class="mt-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones de Cierre</label>
-                            <textarea id="txtObservaciones" rows="2"
-                                placeholder="Ej: Se gastó más por compra de repuestos no previstos..."
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none resize-none text-sm"></textarea>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3 text-gray-500 font-bold">S/</span>
+                                <input id="inputPresupuesto" type="number" step="0.01" min="0" placeholder="0.00" required class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none font-mono text-lg transition-all duration-200">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1 italic">
+                                <i class="fas fa-arrow-right mr-1"></i>Total gastado en insumos/mano de obra.
+                            </p>
                         </div>
 
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                                <i class="fas fa-comments text-purple-600"></i>
+                                Observaciones de Cierre
+                            </label>
+                            <textarea id="txtObservaciones" rows="4" placeholder="Ej: Se gastó más por compra de repuestos no previstos..." class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none resize-none text-sm transition-all duration-200"></textarea>
+                            <p class="text-xs text-gray-500 mt-1 italic">
+                                <i class="fas fa-arrow-right mr-1"></i>Notas adicionales sobre la ejecución.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </form>
 
-            <div class="flex justify-between items-center gap-3 p-5 border-t bg-gray-50 rounded-b-2xl flex-shrink-0">
-                <button type="button" onclick="cerrarModal()"
-                    class="px-5 py-2.5 rounded-lg text-gray-600 hover:bg-gray-200 font-medium transition-colors">
+            <!-- Footer del Modal -->
+            <div class="flex justify-between items-center gap-3 px-6 py-4 border-t-2 border-gray-200 bg-gray-50">
+                <button type="button" onclick="cerrarModal()" class="px-6 py-2.5 rounded-lg text-gray-700 hover:bg-gray-200 font-medium transition-all duration-200 border-2 border-gray-300 hover:border-gray-400 flex items-center gap-2">
+                    <i class="fas fa-times"></i>
                     Cancelar
                 </button>
-                <button type="submit" form="formConfirmacion"
-                    class="btn-validar bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded text-sm shadow">
+                <button type="submit" form="formConfirmacion" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2">
                     <i class="fas fa-check-circle"></i> Confirmar y Cerrar
                 </button>
             </div>
-            
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/utils/swal-helpers.js"></script>
     <script src="js/config/control-objetivos.config.js"></script>
@@ -318,12 +438,93 @@
         // ✅ INICIALIZAR SISTEMA DE PERMISOS
         document.addEventListener('DOMContentLoaded', function() {
             PermisosManager.init();
+            
+            // Inicializar funcionalidad de columnas
+            initColumnToggle();
+            
+            // Inicializar filtros colapsables
+            initFilterToggle();
         });
+
+        // Función para toggle de columnas
+        function initColumnToggle() {
+            const btnToggleColumns = document.getElementById('btnToggleColumns');
+            const columnDropdown = document.getElementById('columnDropdown');
+            
+            if (btnToggleColumns && columnDropdown) {
+                btnToggleColumns.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    columnDropdown.classList.toggle('show');
+                });
+                
+                // Cerrar dropdown al hacer clic fuera
+                document.addEventListener('click', function(e) {
+                    if (!btnToggleColumns.contains(e.target) && !columnDropdown.contains(e.target)) {
+                        columnDropdown.classList.remove('show');
+                    }
+                });
+                
+                // Manejar cambios en checkboxes
+                const checkboxes = columnDropdown.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const columnIndex = parseInt(this.getAttribute('data-column'));
+                        const table = document.querySelector('table');
+                        const cells = table.querySelectorAll(`td:nth-child(${columnIndex + 1}), th:nth-child(${columnIndex + 1})`);
+                        
+                        cells.forEach(cell => {
+                            cell.style.display = this.checked ? '' : 'none';
+                        });
+                    });
+                });
+            }
+        }
+
+        // Función para toggle de filtros
+        function initFilterToggle() {
+            const btnToggleFiltros = document.getElementById('btnToggleFiltros');
+            const filterContent = document.getElementById('filterContent');
+            
+            if (btnToggleFiltros && filterContent) {
+                btnToggleFiltros.addEventListener('click', function() {
+                    filterContent.classList.toggle('show');
+                    const icon = this.querySelector('i');
+                    const span = this.querySelector('span');
+                    
+                    if (filterContent.classList.contains('show')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                        span.textContent = 'Contraer';
+                    } else {
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                        span.textContent = 'Expandir';
+                    }
+                });
+            }
+            
+            // Limpiar filtros
+            const btnLimpiarFiltros = document.getElementById('btnLimpiarFiltros');
+            if (btnLimpiarFiltros) {
+                btnLimpiarFiltros.addEventListener('click', function() {
+                    document.getElementById('filterFechaInicio').value = '';
+                    document.getElementById('filterFechaFin').value = '';
+                    document.getElementById('inputBusqueda').value = '';
+                    document.getElementById('selectEstado').value = 'Todos';
+                });
+            }
+        }
 
         function cerrarModal() {
             const modal = document.getElementById('modalConfirmacion');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+        }
+
+        function abrirModalConfirmacion(id) {
+            const modal = document.getElementById('modalConfirmacion');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
 
         window.onclick = function (event) {
